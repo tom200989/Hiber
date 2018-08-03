@@ -1,0 +1,49 @@
+apply plugin: 'com.android.library'
+apply plugin: 'me.tatarka.retrolambda' // 使用lamda表达式
+
+android {
+    compileSdkVersion 27
+    defaultConfig {
+        minSdkVersion 19
+        targetSdkVersion 27
+        versionCode 1
+        versionName "1.0"
+        buildToolsVersion "27.0.3"
+    }
+    buildTypes {
+        
+        release {
+            //混淆
+            minifyEnabled false
+            //加载默认混淆配置文件
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+    // 使用lamda表达式
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+}
+
+dependencies {
+    compile fileTree(dir: 'libs', include: ['*.jar'])
+
+    // 设置系统状态栏颜色
+    compile 'com.githang:status-bar-compat:0.3'
+    // eventbus
+    compile 'org.greenrobot:eventbus:3.1.1'
+    // fragment监听返回键
+    compile 'com.github.ikidou:FragmentBackHandler:2.1'
+    // 布局不能预览则一定要添加以下三行依赖
+    //noinspection GradleDependency,GradleCompatible
+    compile 'com.android.support:design:25.4.0'
+    //noinspection GradleDependency,GradleCompatible
+    compile 'com.android.support:support-v4:25.4.0'
+    //noinspection GradleDependency,GradleCompatible
+    compile 'com.android.support:appcompat-v7:25.4.0'
+    // 该版本最稳定
+    compile 'com.jakewharton:butterknife:7.0.1'
+    // 百分比布局
+    compile 'com.zhy:percent-support-extends:1.1.1'
+}
