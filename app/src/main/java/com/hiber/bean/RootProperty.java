@@ -58,6 +58,7 @@ public class RootProperty {
     private int containId;
 
     /**
+     * 当前是否全屏
      * @return 当前是否全屏
      */
     public boolean isFullScreen() {
@@ -74,6 +75,7 @@ public class RootProperty {
     }
 
     /**
+     * 获取状态栏颜色
      * @return 获取状态栏颜色
      */
     public int getColorStatusBar() {
@@ -90,6 +92,7 @@ public class RootProperty {
     }
 
     /**
+     * 获取工程默认目录名
      * @return 获取工程默认目录名
      */
     public String getProjectDirName() {
@@ -106,6 +109,7 @@ public class RootProperty {
     }
 
     /**
+     * 获取权限请求码
      * @return 获取权限请求码
      */
     public int getPermissionCode() {
@@ -122,6 +126,7 @@ public class RootProperty {
     }
 
     /**
+     * 获取权限数组
      * @return 获取权限数组
      */
     public String[] getPermissions() {
@@ -138,6 +143,7 @@ public class RootProperty {
     }
 
     /**
+     * 获取fragment字节数组
      * @return 获取fragment字节数组
      */
     public Class[] getFragmentClazzs() {
@@ -154,6 +160,7 @@ public class RootProperty {
     }
 
     /**
+     * 当前是否为「非保存Activity状态」
      * @return 当前是否为「非保存Activity状态」
      */
     public boolean isSaveInstanceState() {
@@ -170,6 +177,7 @@ public class RootProperty {
     }
 
     /**
+     * 获取当前日志标记
      * @return 获取当前日志标记
      */
     public String getTAG() {
@@ -186,6 +194,7 @@ public class RootProperty {
     }
 
     /**
+     * 获取当前的布局ID
      * @return 获取当前的布局ID
      */
     public int getLayoutId() {
@@ -202,6 +211,7 @@ public class RootProperty {
     }
 
     /**
+     * 获取当前布局里的framelayoutID
      * @return 获取当前布局里的framelayoutID
      */
     public int getContainId() {
