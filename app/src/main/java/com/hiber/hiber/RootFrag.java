@@ -65,6 +65,10 @@ public abstract class RootFrag extends Fragment implements FragmentBackHandler {
         }
     }
 
+    /**
+     * 获取其他fragment跳转过来的fragbean
+     * @param bean fragbean
+     */
     @Subscribe(threadMode = ThreadMode.MAIN, sticky = true)
     public void getData(FragBean bean) {
         Lgg.t(Cons.TAG).vv("Method--> " + getClass().getSimpleName() + ":getData()");

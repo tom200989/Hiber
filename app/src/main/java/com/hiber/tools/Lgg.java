@@ -22,6 +22,11 @@ public class Lgg {
     public Lgg() {
     }
 
+    /**
+     * 为日志设置TAG
+     * @param tag 你要设置的TAG字符串
+     * @return 本例对象
+     */
     public static Lgg t(String tag) {
         Lgg.tag = tag;
         if (logs == null) {
@@ -33,7 +38,7 @@ public class Lgg {
         }
         return logs;
     }
-
+    
     public  void vv(String msg) {
         if (VERBOSE < LOG_FLAG) {
             Log.v(tag, msg);

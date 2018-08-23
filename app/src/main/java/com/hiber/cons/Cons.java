@@ -4,6 +4,12 @@ package com.hiber.cons;
  */
 
 public class Cons {
+    /**
+     * 默认日志标记
+     */
     public static String TAG = "Hiber";// 日志标记
+    /**
+     * 默认的工程目录名
+     */
     public static String RootDir = "hiber";// 项目根目录名
 }

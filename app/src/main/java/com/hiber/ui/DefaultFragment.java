@@ -10,6 +10,9 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+/**
+ * 默认加载的fragment,如果使用者没有设置启动的fragment的话
+ */
 public class DefaultFragment extends Fragment {
     
     @Nullable
