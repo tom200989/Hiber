@@ -67,6 +67,7 @@ public abstract class RootFrag extends Fragment implements FragmentBackHandler {
 
     /**
      * 获取其他fragment跳转过来的fragbean
+     *
      * @param bean fragbean
      */
     @Subscribe(threadMode = ThreadMode.MAIN, sticky = true)
@@ -88,7 +89,7 @@ public abstract class RootFrag extends Fragment implements FragmentBackHandler {
     public void onPause() {
         super.onPause();
         Lgg.t(Cons.TAG).vv("Method--> " + getClass().getSimpleName() + ":onPause()");
-        if (EventBus.getDefault().isRegistered(this)) {
+        if (EventBus.getDefault().isRegistered(this) && isReloadData()) {
             Lgg.t(Cons.TAG).vv("Method--> " + getClass().getSimpleName() + ":eventbus unregister");
             EventBus.getDefault().unregister(this);
         }
@@ -126,12 +127,21 @@ public abstract class RootFrag extends Fragment implements FragmentBackHandler {
     /* -------------------------------------------- impl -------------------------------------------- */
 
     /**
-     * 初始化视图完成后的操作
+     * 首次初始化视图完成后的操作
      */
     public void initViewFinish() {
 
     }
-    
+
+    /**
+     * 是否在页面恢复时重新拉取数据
+     *
+     * @return true:默认
+     */
+    public boolean isReloadData() {
+        return true;
+    }
+
     /* -------------------------------------------- helper -------------------------------------------- */
 
     /**
@@ -143,7 +153,12 @@ public abstract class RootFrag extends Fragment implements FragmentBackHandler {
      * @param isTargetReload 是否重载视图
      */
     public void toFrag(Class current, Class target, Object object, boolean isTargetReload) {
-        ((RootMAActivity) getActivity()).toFrag(current, target, object, isTargetReload);
+        try {
+            ((RootMAActivity) getActivity()).toFrag(current, target, object, isTargetReload);
+        } catch (Exception e) {
+            Lgg.t(Cons.TAG).ee("Rootfrag error: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 
     /**

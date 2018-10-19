@@ -89,7 +89,7 @@ public class FraHelpers {
             Fragment fragment = (Fragment) clazz.newInstance();
             ft.replace(contain, fragment, clazz.getSimpleName());
             // 以类名为tag--> 提交事务
-            ft.commit();
+            ft.commitAllowingStateLoss();
             /* 这一句一定要有, 即commit()后要求FT立刻执行, 否则是异步执行 */
             fm.executePendingTransactions();
             // 首次触发RootFrag里的onNexts()执行
@@ -127,7 +127,7 @@ public class FraHelpers {
         if (fragment != null) {
             // 3.2.移除当前
             ft.remove(fragment);
-            ft.commit();
+            ft.commitAllowingStateLoss();
             /* 这一句一定要有, 即commit()后要求FT立刻执行, 否则是异步执行 */
             fm.executePendingTransactions();
         }
@@ -151,7 +151,7 @@ public class FraHelpers {
                 Fragment fragment_temp = fm.findFragmentByTag(tag);
                 if (fragment_temp != null) {
                     ft.hide(fragment_temp);
-                    ft.commit();
+                    ft.commitAllowingStateLoss();
                     fm.executePendingTransactions();
                 }
             }
@@ -166,7 +166,7 @@ public class FraHelpers {
                 // 3.2.添加到容器, 以类名为tag
                 ft.add(contain, fragment, tag);
                 ft.show(fragment);
-                ft.commit();
+                ft.commitAllowingStateLoss();
                 fm.executePendingTransactions();
             } else {
                 
@@ -176,7 +176,7 @@ public class FraHelpers {
                 } else {// 否则正常显示
                     FragmentTransaction ft = fm.beginTransaction();
                     ft.show(fragment);
-                    ft.commit();
+                    ft.commitAllowingStateLoss();
                     fm.executePendingTransactions();
                 }
             }
@@ -197,7 +197,7 @@ public class FraHelpers {
             String tag = clazz.getSimpleName();
             FragmentTransaction ft1 = fm.beginTransaction();
             ft1.remove(fm.findFragmentByTag(tag));
-            ft1.commit();
+            ft1.commitAllowingStateLoss();
             fm.executePendingTransactions();
 
             // 2.再添加
@@ -205,7 +205,7 @@ public class FraHelpers {
             Fragment newFragment = (Fragment) clazz.newInstance();
             ft2.add(contain, newFragment, tag);
             ft2.show(newFragment);
-            ft2.commit();
+            ft2.commitAllowingStateLoss();
             /* 这一句一定要有, 即commit()后要求FT立刻执行, 否则是异步执行 */
             fm.executePendingTransactions();
         } catch (Exception e) {
@@ -252,7 +252,7 @@ public class FraHelpers {
             }
             // 4.提交
             ft.show(showFragment);
-            ft.commit();
+            ft.commitAllowingStateLoss();
             /* 这一句一定要有, 即commit()后要求FT立刻执行, 否则是异步执行 */
             fm.executePendingTransactions();
         } catch (Exception e) {
