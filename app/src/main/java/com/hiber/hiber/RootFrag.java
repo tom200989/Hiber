@@ -11,15 +11,16 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.github.ikidou.fragmentBackHandler.FragmentBackHandler;
 import com.hiber.cons.Cons;
 import com.hiber.tools.Lgg;
+import com.hiber.tools.backhandler.FragmentBackHandler;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
 import butterknife.ButterKnife;
+import butterknife.Unbinder;
 
 /**
  * Created by qianli.ma on 2018/7/23 0023.
@@ -30,6 +31,7 @@ public abstract class RootFrag extends Fragment implements FragmentBackHandler {
     private View inflateView;
     private int layoutId;
     public FragmentActivity activity;
+    public Unbinder unbinder;
 
     @Override
     public void onAttach(Context context) {
@@ -47,7 +49,7 @@ public abstract class RootFrag extends Fragment implements FragmentBackHandler {
         // 2.填充视图
         inflateView = View.inflate(activity, layoutId, null);
         // 3.绑定butterknife
-        ButterKnife.bind(this, inflateView);
+        unbinder = ButterKnife.bind(this, inflateView);
         Lgg.t(Cons.TAG).vv("Method--> " + getClass().getSimpleName() + ":return inflateView");
         // 4.加载完视图后的操作--> 由子类重写
         initViewFinish();

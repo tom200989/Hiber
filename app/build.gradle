@@ -1,17 +1,16 @@
 apply plugin: 'com.android.library'
-apply plugin: 'me.tatarka.retrolambda' // 使用lamda表达式
 
 android {
-    compileSdkVersion 27
+    compileSdkVersion 28
     defaultConfig {
-        minSdkVersion 19
-        targetSdkVersion 27
+        buildToolsVersion "28.0.3"
+        minSdkVersion 14
+        targetSdkVersion 28
         versionCode 1
         versionName "1.0"
-        buildToolsVersion "27.0.3"
     }
     buildTypes {
-        
+
         release {
             //混淆
             minifyEnabled false
@@ -26,24 +25,23 @@ android {
     }
 }
 
-dependencies {
-    compile fileTree(dir: 'libs', include: ['*.jar'])
+repositories {
+    flatDir {
+        dirs 'libs'
+    }
+}
 
-    // 设置系统状态栏颜色
-    compile 'com.githang:status-bar-compat:0.3'
+dependencies {
+    api fileTree(dir: 'libs', include: ['*.jar'])
+
     // eventbus
-    compile 'org.greenrobot:eventbus:3.1.1'
-    // fragment监听返回键
-    compile 'com.github.ikidou:FragmentBackHandler:2.1'
-    // 布局不能预览则一定要添加以下三行依赖
-    //noinspection GradleDependency,GradleCompatible
-    compile 'com.android.support:design:25.4.0'
-    //noinspection GradleDependency,GradleCompatible
-    compile 'com.android.support:support-v4:25.4.0'
-    //noinspection GradleDependency,GradleCompatible
-    compile 'com.android.support:appcompat-v7:25.4.0'
-    // 该版本最稳定
-    compile 'com.jakewharton:butterknife:7.0.1'
-    // 百分比布局
-    compile 'com.zhy:percent-support-extends:1.1.1'
+    implementation 'org.greenrobot:eventbus:3.1.1'
+    // sdk = 28
+    implementation 'com.android.support:design:28.0.0'
+    implementation 'com.android.support:support-v4:28.0.0'
+    implementation 'com.android.support:appcompat-v7:28.0.0'
+
+    // butterknife
+    implementation 'com.jakewharton:butterknife:9.0.0-rc2'
+    annotationProcessor 'com.jakewharton:butterknife-compiler:9.0.0-rc2'
 }

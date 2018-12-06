@@ -3,6 +3,7 @@ package com.hiber.tools;
  * Created by qianli.ma on 2018/8/8 0008.
  */
 
+
 import com.hiber.tools.encoder.Des;
 
 public class RootEncrypt {

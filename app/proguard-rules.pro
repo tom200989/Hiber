@@ -15,6 +15,7 @@
 -keep class org.greenrobot.**{*;}
 -keep class com.github.ikidou.**{*;}
 -keep class com.githang.**{*;}
+-keep class com.qianli.**{*;}
 -keep class com.android.support.**{*;}
 -keep class com.jakewharton.butterknife.**{*;}
 -keep class com.zhy.**{*;}

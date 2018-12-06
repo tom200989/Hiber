@@ -14,12 +14,12 @@ import android.support.v4.content.ContextCompat;
 import android.text.TextUtils;
 import android.view.Window;
 
-import com.githang.statusbar.StatusBarCompat;
-import com.github.ikidou.fragmentBackHandler.BackHandlerHelper;
 import com.hiber.bean.RootProperty;
 import com.hiber.cons.Cons;
-import com.hiber.ui.DefaultFragment;
 import com.hiber.tools.Lgg;
+import com.hiber.tools.backhandler.BackHandlerHelper;
+import com.hiber.tools.barcompat.StatusBarCompat;
+import com.hiber.ui.DefaultFragment;
 
 import org.greenrobot.eventbus.EventBus;
 
