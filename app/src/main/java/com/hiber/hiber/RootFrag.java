@@ -156,7 +156,12 @@ public abstract class RootFrag extends Fragment implements FragmentBackHandler {
      */
     public void toFrag(Class current, Class target, Object object, boolean isTargetReload) {
         try {
-            ((RootMAActivity) getActivity()).toFrag(current, target, object, isTargetReload);
+            RootMAActivity activity = (RootMAActivity) getActivity();
+            if (activity != null) {
+                activity.toFrag(current, target, object, isTargetReload);
+            } else {
+                Lgg.t(Cons.TAG).ee("RootHiber--> toFrag() error: RootMAActivity is null");
+            }
         } catch (Exception e) {
             Lgg.t(Cons.TAG).ee("Rootfrag error: " + e.getMessage());
             e.printStackTrace();
@@ -167,21 +172,36 @@ public abstract class RootFrag extends Fragment implements FragmentBackHandler {
      * @param target 移除某个fragment
      */
     public void removeFrag(Class target) {
-        ((RootMAActivity) getActivity()).removeFrag(target);
+        RootMAActivity activity = (RootMAActivity) getActivity();
+        if (activity != null) {
+            activity.removeFrag(target);
+        } else {
+            Lgg.t(Cons.TAG).ee("RootHiber--> removeFrag() error: RootMAActivity is null");
+        }
     }
 
     /**
      * 结束当前Activit
      */
     public void finish() {
-        ((RootMAActivity) getActivity()).finishOver();
+        RootMAActivity activity = (RootMAActivity) getActivity();
+        if (activity != null) {
+            activity.finishOver();
+        } else {
+            Lgg.t(Cons.TAG).ee("RootHiber--> finish() error: RootMAActivity is null");
+        }
     }
 
     /**
      * 杀死APP
      */
     public void kill() {
-        ((RootMAActivity) getActivity()).kill();
+        RootMAActivity activity = (RootMAActivity) getActivity();
+        if (activity != null) {
+            activity.kill();
+        } else {
+            Lgg.t(Cons.TAG).ee("RootHiber--> kill() error: RootMAActivity is null");
+        }
     }
 
     /**
@@ -191,7 +211,12 @@ public abstract class RootFrag extends Fragment implements FragmentBackHandler {
      * @param duration 时长
      */
     public void toast(String tip, int duration) {
-        ((RootMAActivity) getActivity()).toast(tip, duration);
+        RootMAActivity activity = (RootMAActivity) getActivity();
+        if (activity != null) {
+            activity.toast(tip, duration);
+        } else {
+            Lgg.t(Cons.TAG).ee("RootHiber--> toast() error: RootMAActivity is null");
+        }
     }
 
     /**
@@ -201,7 +226,12 @@ public abstract class RootFrag extends Fragment implements FragmentBackHandler {
      * @param duration 时长
      */
     public void toast(@StringRes int tip, int duration) {
-        ((RootMAActivity) getActivity()).toast(tip, duration);
+        RootMAActivity activity = (RootMAActivity) getActivity();
+        if (activity != null) {
+            activity.toast(tip, duration);
+        } else {
+            Lgg.t(Cons.TAG).ee("RootHiber--> toast() error: RootMAActivity is null");
+        }
     }
 
     /**
@@ -212,18 +242,28 @@ public abstract class RootFrag extends Fragment implements FragmentBackHandler {
      * @param isFinish 是否默认方式
      */
     public void toActivity(Activity context, Class<?> clazz, boolean isFinish) {
-        ((RootMAActivity) getActivity()).toActivity(context, clazz, isFinish);
+        RootMAActivity activity = (RootMAActivity) getActivity();
+        if (activity != null) {
+            activity.toActivity(context, clazz, isFinish);
+        } else {
+            Lgg.t(Cons.TAG).ee("RootHiber--> toActivity() error: RootMAActivity is null");
+        }
     }
 
     /**
      * 跳转(隐式)
      *
      * @param context  当前环境
-     * @param action    目标
+     * @param action   目标
      * @param isFinish 是否默认方式
      */
     public void toActivityImplicit(Activity context, String action, boolean isFinish) {
-        ((RootMAActivity) getActivity()).toActivityImplicit(context, action, isFinish);
+        RootMAActivity activity = (RootMAActivity) getActivity();
+        if (activity != null) {
+            activity.toActivityImplicit(context, action, isFinish);
+        } else {
+            Lgg.t(Cons.TAG).ee("RootHiber--> toActivityImplicit() error: RootMAActivity is null");
+        }
     }
 
     /**
@@ -234,7 +274,12 @@ public abstract class RootFrag extends Fragment implements FragmentBackHandler {
      * @param isFinish 是否默认方式
      */
     public void toActivity(Activity activity, Class<?> clazz, boolean isSigleTop, boolean isFinish, boolean overpedding, int delay) {
-        ((RootMAActivity) getActivity()).toActivity(activity, clazz, isSigleTop, isFinish, overpedding, delay);
+        RootMAActivity rootMAActivity = (RootMAActivity) getActivity();
+        if (rootMAActivity != null) {
+            rootMAActivity.toActivity(activity, clazz, isSigleTop, isFinish, overpedding, delay);
+        } else {
+            Lgg.t(Cons.TAG).ee("RootHiber--> toActivity() error: RootMAActivity is null");
+        }
     }
 
     /**
@@ -248,7 +293,12 @@ public abstract class RootFrag extends Fragment implements FragmentBackHandler {
      * @param delay       延迟
      */
     public void toActivityImplicit(Activity activity, String action, boolean isSigleTop, boolean isFinish, boolean overpedding, int delay) {
-        ((RootMAActivity) getActivity()).toActivityImplicit(activity, action, isSigleTop, isFinish, overpedding, delay);
+        RootMAActivity rootMAActivity = (RootMAActivity) getActivity();
+        if (rootMAActivity != null) {
+            rootMAActivity.toActivityImplicit(activity, action, isSigleTop, isFinish, overpedding, delay);
+        } else {
+            Lgg.t(Cons.TAG).ee("RootHiber--> toActivityImplicit() error: RootMAActivity is null");
+        }
     }
 
     /**
@@ -264,6 +314,7 @@ public abstract class RootFrag extends Fragment implements FragmentBackHandler {
      * @return fragment调度器
      */
     public FraHelpers getFragmentHelper() {
-        return ((RootMAActivity) getActivity()).getFragmentHelper();
+        RootMAActivity activity = (RootMAActivity) getActivity();
+        return activity != null ? activity.getFragmentHelper() : null;
     }
 }
