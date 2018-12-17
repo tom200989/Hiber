@@ -138,7 +138,7 @@ public abstract class RootFrag extends Fragment implements FragmentBackHandler {
     /**
      * 是否在页面恢复时重新拉取数据
      *
-     * @return true:默认
+     * @return true:默认(T:会触发eventbus注销并在下次重新注册, 间接触发onNexts()的重复执行)
      */
     public boolean isReloadData() {
         return true;
@@ -216,6 +216,17 @@ public abstract class RootFrag extends Fragment implements FragmentBackHandler {
     }
 
     /**
+     * 跳转(隐式)
+     *
+     * @param context  当前环境
+     * @param action    目标
+     * @param isFinish 是否默认方式
+     */
+    public void toActivityImplicit(Activity context, String action, boolean isFinish) {
+        ((RootMAActivity) getActivity()).toActivityImplicit(context, action, isFinish);
+    }
+
+    /**
      * 跳转(自定义方式)
      *
      * @param activity 当前环境
@@ -224,6 +235,20 @@ public abstract class RootFrag extends Fragment implements FragmentBackHandler {
      */
     public void toActivity(Activity activity, Class<?> clazz, boolean isSigleTop, boolean isFinish, boolean overpedding, int delay) {
         ((RootMAActivity) getActivity()).toActivity(activity, clazz, isSigleTop, isFinish, overpedding, delay);
+    }
+
+    /**
+     * 跳转(隐式)
+     *
+     * @param activity    上下文
+     * @param action      目标
+     * @param isSigleTop  独立站
+     * @param isFinish    是否结束当前
+     * @param overpedding F:消除转场闪烁 T:保留转场闪烁
+     * @param delay       延迟
+     */
+    public void toActivityImplicit(Activity activity, String action, boolean isSigleTop, boolean isFinish, boolean overpedding, int delay) {
+        ((RootMAActivity) getActivity()).toActivityImplicit(activity, action, isSigleTop, isFinish, overpedding, delay);
     }
 
     /**

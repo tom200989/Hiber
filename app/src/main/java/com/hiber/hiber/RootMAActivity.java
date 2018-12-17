@@ -145,8 +145,8 @@ public abstract class RootMAActivity extends FragmentActivity {
 
     @Override
     protected void onSaveInstanceState(Bundle outState) {
-        
-        /* 
+
+        /*
          * 重写这个方法是为了解决: 用户点击权限允许后界面无法继续加载的bug.
          * NoSaveInstanceStateActivityName(): 一般由第一个Activity进行实现
          * onSaveInstanceState()方法在获取权限时, 导致fragment初始化失败
@@ -294,7 +294,7 @@ public abstract class RootMAActivity extends FragmentActivity {
             Lgg.t(TAG).vv("Method--> " + getClass().getSimpleName() + ":createInstallRootDir() == " + mkdir);
         }
     }
-    
+
     /* -------------------------------------------- Normal method -------------------------------------------- */
 
     /**
@@ -378,6 +378,17 @@ public abstract class RootMAActivity extends FragmentActivity {
     }
 
     /**
+     * 跳转(隐式)
+     *
+     * @param activity 当前环境
+     * @param action    目标
+     * @param isFinish 是否默认方式
+     */
+    public void toActivityImplicit(Activity activity, String action, boolean isFinish) {
+        RootHelper.toActivityImplicit(activity, action, isFinish);
+    }
+    
+    /**
      * 跳转(自定义方式)
      *
      * @param activity 当前环境
@@ -387,8 +398,22 @@ public abstract class RootMAActivity extends FragmentActivity {
     public void toActivity(Activity activity, Class<?> clazz, boolean isSigleTop, boolean isFinish, boolean overpedding, int delay) {
         RootHelper.toActivity(activity, clazz, isSigleTop, isFinish, overpedding, delay);
     }
-    
-   /* -------------------------------------------- abstract -------------------------------------------- */
+
+    /**
+     * 跳转(隐式)
+     *
+     * @param activity    上下文
+     * @param action      目标
+     * @param isSigleTop  独立站
+     * @param isFinish    是否结束当前
+     * @param overpedding F:消除转场闪烁 T:保留转场闪烁
+     * @param delay       延迟
+     */
+    public void toActivityImplicit(Activity activity, String action, boolean isSigleTop, boolean isFinish, boolean overpedding, int delay) {
+        RootHelper.toActivityImplicit(activity, action, isSigleTop, isFinish, overpedding, delay);
+    }
+
+    /* -------------------------------------------- abstract -------------------------------------------- */
 
     /**
      * 初始配置
