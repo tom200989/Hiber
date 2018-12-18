@@ -3,6 +3,7 @@ package com.hiber.hiber;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.content.Context;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
@@ -16,6 +17,7 @@ import android.view.Window;
 
 import com.hiber.bean.RootProperty;
 import com.hiber.cons.Cons;
+import com.hiber.hiber.language.LangHelper;
 import com.hiber.tools.Lgg;
 import com.hiber.tools.backhandler.BackHandlerHelper;
 import com.hiber.tools.barcompat.StatusBarCompat;
@@ -120,7 +122,12 @@ public abstract class RootMAActivity extends FragmentActivity {
             toast("RootProperty is null \n app crash", 2500);
             Lgg.t(TAG).vv("RootProperty is null");
         }
+    }
 
+    @Override
+    protected void attachBaseContext(Context context) {
+        // 国际化语言切换时必须使用以下方式 (需要把context与语言配置进行绑定)
+        super.attachBaseContext(LangHelper.getContext(context));
     }
 
     /**
@@ -381,13 +388,13 @@ public abstract class RootMAActivity extends FragmentActivity {
      * 跳转(隐式)
      *
      * @param activity 当前环境
-     * @param action    目标
+     * @param action   目标
      * @param isFinish 是否默认方式
      */
     public void toActivityImplicit(Activity activity, String action, boolean isFinish) {
         RootHelper.toActivityImplicit(activity, action, isFinish);
     }
-    
+
     /**
      * 跳转(自定义方式)
      *
