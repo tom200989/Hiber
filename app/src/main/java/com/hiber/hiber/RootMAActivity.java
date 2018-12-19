@@ -124,6 +124,11 @@ public abstract class RootMAActivity extends FragmentActivity {
         }
     }
 
+    /**
+     * 国际化语言必须实现的方法
+     *
+     * @param context 上下文
+     */
     @Override
     protected void attachBaseContext(Context context) {
         // 国际化语言切换时必须使用以下方式 (需要把context与语言配置进行绑定)

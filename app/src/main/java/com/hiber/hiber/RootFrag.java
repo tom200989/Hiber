@@ -66,7 +66,7 @@ public abstract class RootFrag extends Fragment implements FragmentBackHandler {
             Lgg.t(Cons.TAG).vv(getClass().getSimpleName() + ":eventbus register");
         }
     }
-
+    
     /**
      * 获取其他fragment跳转过来的fragbean
      *
