@@ -148,11 +148,11 @@ public abstract class RootMAActivity extends FragmentActivity {
         layoutId = rootProperty.getLayoutId() <= 0 ? layoutId : rootProperty.getLayoutId();
         TAG = TextUtils.isEmpty(rootProperty.getTAG()) ? TAG : rootProperty.getTAG();
         isSaveInstanceState = rootProperty.isSaveInstanceState();
-        permissions = rootProperty.getPermissions() == null | rootProperty.getPermissions().length <= 0 ? permissions : rootProperty.getPermissions();
+        permissions = rootProperty.getPermissions() == null || rootProperty.getPermissions().length <= 0 ? permissions : rootProperty.getPermissions();
         permissionCode = rootProperty.getPermissionCode() < 0 ? permissionCode : rootProperty.getPermissionCode();
         projectDirName = TextUtils.isEmpty(rootProperty.getProjectDirName()) ? projectDirName : rootProperty.getProjectDirName();
         containId = rootProperty.getContainId() <= 0 ? containId : rootProperty.getContainId();
-        fragmentClazzs = rootProperty.getFragmentClazzs() == null | rootProperty.getFragmentClazzs().length <= 0 ? fragmentClazzs : rootProperty.getFragmentClazzs();
+        fragmentClazzs = rootProperty.getFragmentClazzs() == null || rootProperty.getFragmentClazzs().length <= 0 ? fragmentClazzs : rootProperty.getFragmentClazzs();
     }
 
     @Override
