@@ -124,7 +124,7 @@ public abstract class RootMAActivity extends FragmentActivity {
         Lgg.t(TAG).vv("Method--> " + getClass().getSimpleName() + ":dispatherProperty()");
         Lgg.t(TAG).vv(rootProperty.toString());
         isFullScreen = rootProperty.isFullScreen();
-        colorStatusBar = rootProperty.getColorStatusBar() < 0 ? colorStatusBar : rootProperty.getColorStatusBar();
+        colorStatusBar = rootProperty.getColorStatusBar() <= 0 ? colorStatusBar : rootProperty.getColorStatusBar();
         layoutId = rootProperty.getLayoutId() <= 0 ? layoutId : rootProperty.getLayoutId();
         TAG = TextUtils.isEmpty(rootProperty.getTAG()) ? TAG : rootProperty.getTAG();
         isSaveInstanceState = rootProperty.isSaveInstanceState();

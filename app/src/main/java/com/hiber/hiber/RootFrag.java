@@ -10,6 +10,7 @@ import android.support.annotation.StringRes;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.content.PermissionChecker;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -44,7 +45,7 @@ public abstract class RootFrag extends Fragment implements FragmentBackHandler {
     public Unbinder unbinder;
     private Object attach;
     private String whichFragmentStart;
-
+    private static final String TAG = "RootFrag";
     // 权限相关
     private int permissedCode = 0x101;
     private String[] initPermisseds;// 初始化需要申请的权限
@@ -52,7 +53,7 @@ public abstract class RootFrag extends Fragment implements FragmentBackHandler {
     public static final int ACTION_DEFAULT = 0;// 默认情况
     public static final int ACTION_DENY = -1;// 拒绝情况
     public static final int ACTION_PASS = 1;// 同意情况
-    private HashMap<HashMap<String, Integer>, Integer> permissedMap;
+    private HashMap<HashMap<String, Integer>, Integer> permissedActionMap;
     PermissedListener permissedListener;
 
     @Override
@@ -115,21 +116,24 @@ public abstract class RootFrag extends Fragment implements FragmentBackHandler {
      * @param permissions 需要初始的权限组
      */
     private void initPermissionMap(String[] permissions) {
-        if (permissedMap == null) {
-            permissedMap = new HashMap<>();
+        if (permissedActionMap == null) {
+            permissedActionMap = new HashMap<>();
         }
-        permissedMap.clear();
-        for (String permission : permissions) {
-            HashMap<String, Integer> map = new HashMap<>();
-            map.put(permission, PackageManager.PERMISSION_DENIED);
-            permissedMap.put(map, ACTION_DEFAULT);
+        permissedActionMap.clear();
+        if (permissions != null) {
+            for (String permission : permissions) {
+                HashMap<String, Integer> map = new HashMap<>();
+                map.put(permission, PackageManager.PERMISSION_DENIED);
+                permissedActionMap.put(map, ACTION_DEFAULT);
+            }
         }
+
     }
 
     @Override
     public void onResume() {
         super.onResume();
-
+        Log.i(TAG, "onResume: ");
         // 1.初始化检查权限
         if (isReqPermissed(initPermisseds)) {
             // 1.1.处理未申请权限
@@ -166,20 +170,19 @@ public abstract class RootFrag extends Fragment implements FragmentBackHandler {
      */
     private void handlePermissed(boolean isClickPermissed) {
         // 如果用户在同意后到system setting做了取消操作，需要把权限状态更新一下
-        checkPermissedState(isClickPermissed ? clickPermisseds : initPermisseds);
-        Collection<Integer> values = permissedMap.values();
+        Collection<Integer> values = permissedActionMap.values();
         if (values.contains(ACTION_DEFAULT)) {// 默认情况(初始化）--> 直接请求权限申请
             requestPermissions(initPermisseds, permissedCode);
         } else {// 非默认情况（用户已通过系统框进行操作）--> 重新封装（记录拒绝的权限状态）
+            checkPermissedState(isClickPermissed ? clickPermisseds : initPermisseds);
             List<String> denyPermissions = new ArrayList<>();
-            Set<HashMap<String, Integer>> hashMaps = permissedMap.keySet();
+            Set<HashMap<String, Integer>> hashMaps = permissedActionMap.keySet();
             for (HashMap<String, Integer> map : hashMaps) {
                 Set<Map.Entry<String, Integer>> entries = map.entrySet();
                 for (Map.Entry<String, Integer> entry : entries) {
                     if (entry.getValue() == PackageManager.PERMISSION_DENIED) {
                         denyPermissions.add(entry.getKey());
                     }
-                    break;
                 }
             }
             // 把拒绝的权限接口对外提供
@@ -196,6 +199,7 @@ public abstract class RootFrag extends Fragment implements FragmentBackHandler {
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        Log.i(TAG, "onRequestPermissionsResult: ");
         checkPermissedState(permissions);// 检查权限当前的最新状态
     }
 
@@ -207,6 +211,7 @@ public abstract class RootFrag extends Fragment implements FragmentBackHandler {
      * @call handlePermissed()
      */
     private void checkPermissedState(String[] permissions) {
+        HashMap<HashMap<String,Integer>,Integer> tempHashMap = new HashMap<>();
         for (String permission : permissions) {
 
             int permissedState;// 系统返回的权限状态
@@ -217,23 +222,28 @@ public abstract class RootFrag extends Fragment implements FragmentBackHandler {
             permissedState = isDenied ? PackageManager.PERMISSION_DENIED : PackageManager.PERMISSION_GRANTED;
             userAction = isDenied ? ACTION_DENY : ACTION_PASS;
             // 重新赋值更新Map状态
-            Set<Map.Entry<HashMap<String, Integer>, Integer>> entries = permissedMap.entrySet();
+            Set<Map.Entry<HashMap<String, Integer>, Integer>> entries = permissedActionMap.entrySet();
             for (Map.Entry<HashMap<String, Integer>, Integer> entry : entries) {
-                HashMap<String, Integer> key = entry.getKey();
-                if (key.containsKey(permission)) {
-                    key.put(permission, permissedState);
-                    permissedMap.remove(entry);
-                    permissedMap.put(key, userAction);
-                    break;
+                HashMap<String, Integer> permissedMap = entry.getKey();
+                for (String permissionName : permissedMap.keySet()) {
+                    if (permissionName.equalsIgnoreCase(permission)) {
+                        HashMap<String,Integer> map = new HashMap<>();
+                        map.put(permission,permissedState);
+                        tempHashMap.put(map,userAction);
+//                        permissedActionMap.remove(entry);
+//                        permissedActionMap.put(permissedMap, userAction);
+//                        break;
+                    }
                 }
             }
         }
+        permissedActionMap = tempHashMap;
     }
 
     /**
      * 权限监听接口
      */
-    interface PermissedListener {
+    public interface PermissedListener {
         void permissionResult(boolean isPassAllPermission, String[] denyPermissions);
     }
 
@@ -290,7 +300,7 @@ public abstract class RootFrag extends Fragment implements FragmentBackHandler {
         if (getClass().getSimpleName().equalsIgnoreCase(targetFragment)) {
             Lgg.t(Cons.TAG).vv("whichFragmentStart <equal to> targetFragment");
             onNexts(attach, inflateView, whichFragmentStart);
-            permissedMap.clear();
+            // permissedActionMap.clear();
         }
     }
 
