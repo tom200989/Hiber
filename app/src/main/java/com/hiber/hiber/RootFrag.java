@@ -2,11 +2,14 @@ package com.hiber.hiber;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.annotation.StringRes;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
+import android.support.v4.content.PermissionChecker;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,6 +21,13 @@ import com.hiber.tools.backhandler.FragmentBackHandler;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import butterknife.ButterKnife;
 import butterknife.Unbinder;
@@ -32,12 +42,53 @@ public abstract class RootFrag extends Fragment implements FragmentBackHandler {
     private int layoutId;
     public FragmentActivity activity;
     public Unbinder unbinder;
+    private Object attach;
+    private String whichFragmentStart;
+
+    // 权限相关
+    private int permissedCode = 0x101;
+    private String[] initPermisseds;// 初始化需要申请的权限
+    private String[] clickPermisseds;// 点击时需要申请的权限
+    public static final int ACTION_DEFAULT = 0;// 默认情况
+    public static final int ACTION_DENY = -1;// 拒绝情况
+    public static final int ACTION_PASS = 1;// 同意情况
+    private HashMap<HashMap<String, Integer>, Integer> permissedMap;
+    PermissedListener permissedListener;
 
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
         activity = getActivity();
         Lgg.t(Cons.TAG).vv("Method--> " + getClass().getSimpleName() + ":onAttach()");
+    }
+
+    /**
+     * 由外部重写初始化权限
+     *
+     * @return 需要申请的权限组（可以为null, 为null即不申请)
+     */
+    public String[] initPermissed() {
+        return null;
+    }
+
+    /**
+     * 点击申请权限
+     *
+     * @param permissions 需要申请的权限组
+     */
+    public void clickPermissed(String[] permissions) {
+        initPermisseds = null;// 1.该步防止初始化权限重复申请
+        clickPermisseds = permissions;
+        if (isReqPermissed(clickPermisseds)) {// 2.点击权限申请
+            initPermissionMap(clickPermisseds);
+            requestPermissions(clickPermisseds, permissedCode);
+        } else {
+            if (permissedListener != null) {
+                permissedListener.permissionResult(true, null);
+            }
+            clickPermisseds = null;
+        }
+
     }
 
     @Nullable
@@ -53,20 +104,175 @@ public abstract class RootFrag extends Fragment implements FragmentBackHandler {
         Lgg.t(Cons.TAG).vv("Method--> " + getClass().getSimpleName() + ":return inflateView");
         // 4.加载完视图后的操作--> 由子类重写
         initViewFinish();
+        initPermisseds = initPermissed();
+        initPermissionMap(initPermisseds);
         return inflateView;
+    }
+
+    /**
+     * 初始化权限状态与用户Action
+     *
+     * @param permissions 需要初始的权限组
+     */
+    private void initPermissionMap(String[] permissions) {
+        if (permissedMap == null) {
+            permissedMap = new HashMap<>();
+        }
+        permissedMap.clear();
+        for (String permission : permissions) {
+            HashMap<String, Integer> map = new HashMap<>();
+            map.put(permission, PackageManager.PERMISSION_DENIED);
+            permissedMap.put(map, ACTION_DEFAULT);
+        }
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        Lgg.t(Cons.TAG).vv("Method--> " + getClass().getSimpleName() + ":onResume()");
-        if (!EventBus.getDefault().isRegistered(this)) {
-            // 4.注册订阅
-            EventBus.getDefault().register(this);
-            Lgg.t(Cons.TAG).vv(getClass().getSimpleName() + ":eventbus register");
+
+        // 1.初始化检查权限
+        if (isReqPermissed(initPermisseds)) {
+            // 1.1.处理未申请权限
+            handlePermissed(false);
+        } else {
+            // 1.2.因点击申请时将initPermissions置空--> 初始化权限申请行为将不被重复触发
+            // TODO: 2018/12/21 疑问：是否有必要把初始化权限申请全部通过之后的回调提供给开发人员？
+            //if (permissedListener != null && initPermisseds != null) {
+            //permissedListener.permissionResult(true,null);
+            //}
+
+            // 1.2.初始化权限全部通过 || 点击申请即使不通过 --> 也不影响数据初始化
+            if (!EventBus.getDefault().isRegistered(this)) {
+                EventBus.getDefault().register(this);
+            }
+        }
+
+        if (isReqPermissed(clickPermisseds)) {// 触发点击申请权限行为
+            handlePermissed(true);
+        } else {
+            // 点击申请权限全部通过--> 接口回调
+            if (permissedListener != null && clickPermisseds != null) {
+                // 点击权限全部通过--> 执行你的业务逻辑（如启动照相机）
+                permissedListener.permissionResult(true, null);
+                clickPermisseds = null;// 防止重新进入该页面重复执行业务逻辑
+            }
         }
     }
-    
+
+    /**
+     * 处理未申请的权限
+     *
+     * @param isClickPermissed 是否为点击申请
+     */
+    private void handlePermissed(boolean isClickPermissed) {
+        // 如果用户在同意后到system setting做了取消操作，需要把权限状态更新一下
+        checkPermissedState(isClickPermissed ? clickPermisseds : initPermisseds);
+        Collection<Integer> values = permissedMap.values();
+        if (values.contains(ACTION_DEFAULT)) {// 默认情况(初始化）--> 直接请求权限申请
+            requestPermissions(initPermisseds, permissedCode);
+        } else {// 非默认情况（用户已通过系统框进行操作）--> 重新封装（记录拒绝的权限状态）
+            List<String> denyPermissions = new ArrayList<>();
+            Set<HashMap<String, Integer>> hashMaps = permissedMap.keySet();
+            for (HashMap<String, Integer> map : hashMaps) {
+                Set<Map.Entry<String, Integer>> entries = map.entrySet();
+                for (Map.Entry<String, Integer> entry : entries) {
+                    if (entry.getValue() == PackageManager.PERMISSION_DENIED) {
+                        denyPermissions.add(entry.getKey());
+                    }
+                    break;
+                }
+            }
+            // 把拒绝的权限接口对外提供
+            if (permissedListener != null) {
+                permissedListener.permissionResult(false, denyPermissions.toArray(new String[denyPermissions.size()]));
+            }
+
+            // 点击申请情况--> 将点击权限设置为空
+            if (isClickPermissed) {
+                clickPermisseds = null;
+            }
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        checkPermissedState(permissions);// 检查权限当前的最新状态
+    }
+
+    /**
+     * 检查权限当前的最新状态
+     *
+     * @param permissions 需要检查的权限组
+     * @call onRequestPermissionsResult()
+     * @call handlePermissed()
+     */
+    private void checkPermissedState(String[] permissions) {
+        for (String permission : permissions) {
+
+            int permissedState;// 系统返回的权限状态
+            int userAction;// 权限框弹出后用户的行为
+
+            // 检查用户操作权限框后的拒绝状态
+            boolean isDenied = PermissionChecker.checkSelfPermission(getContext(), permission) == PackageManager.PERMISSION_DENIED;
+            permissedState = isDenied ? PackageManager.PERMISSION_DENIED : PackageManager.PERMISSION_GRANTED;
+            userAction = isDenied ? ACTION_DENY : ACTION_PASS;
+            // 重新赋值更新Map状态
+            Set<Map.Entry<HashMap<String, Integer>, Integer>> entries = permissedMap.entrySet();
+            for (Map.Entry<HashMap<String, Integer>, Integer> entry : entries) {
+                HashMap<String, Integer> key = entry.getKey();
+                if (key.containsKey(permission)) {
+                    key.put(permission, permissedState);
+                    permissedMap.remove(entry);
+                    permissedMap.put(key, userAction);
+                    break;
+                }
+            }
+        }
+    }
+
+    /**
+     * 权限监听接口
+     */
+    interface PermissedListener {
+        void permissionResult(boolean isPassAllPermission, String[] denyPermissions);
+    }
+
+    /**
+     * 设置权限监听接口
+     *
+     * @param permissedListener 权限监听接口
+     */
+    public void setPermissedListener(PermissedListener permissedListener) {
+        this.permissedListener = permissedListener;
+    }
+
+
+    /**
+     * 是否需要执行请求权限操作
+     *
+     * @param permissions 权限组
+     * @return T：需要
+     */
+    private boolean isReqPermissed(String[] permissions) {
+        if (permissions == null) {
+            return false;
+        }
+        // 1.循环检查权限
+        List<Integer> permissionInt = new ArrayList<>();
+        for (String permission : permissions) {
+            permissionInt.add(PermissionChecker.checkSelfPermission(getContext(), permission));
+        }
+
+        // 2.判断是否有未通过的权限
+        for (Integer permissionDenied : permissionInt) {
+            if (permissionDenied == PackageManager.PERMISSION_DENIED) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+
     /**
      * 获取其他fragment跳转过来的fragbean
      *
@@ -75,8 +281,8 @@ public abstract class RootFrag extends Fragment implements FragmentBackHandler {
     @Subscribe(threadMode = ThreadMode.MAIN, sticky = true)
     public void getData(FragBean bean) {
         Lgg.t(Cons.TAG).vv("Method--> " + getClass().getSimpleName() + ":getData()");
-        Object attach = bean.getAttach();
-        String whichFragmentStart = bean.getCurrentFragmentClass().getSimpleName();
+        attach = bean.getAttach();
+        whichFragmentStart = bean.getCurrentFragmentClass().getSimpleName();
         String targetFragment = bean.getTargetFragmentClass().getSimpleName();
         Lgg.t(Cons.TAG).vv("whichFragmentStart: " + whichFragmentStart);
         Lgg.t(Cons.TAG).vv("targetFragment: " + targetFragment);
@@ -84,6 +290,7 @@ public abstract class RootFrag extends Fragment implements FragmentBackHandler {
         if (getClass().getSimpleName().equalsIgnoreCase(targetFragment)) {
             Lgg.t(Cons.TAG).vv("whichFragmentStart <equal to> targetFragment");
             onNexts(attach, inflateView, whichFragmentStart);
+            permissedMap.clear();
         }
     }
 
@@ -316,5 +523,10 @@ public abstract class RootFrag extends Fragment implements FragmentBackHandler {
     public FraHelpers getFragmentHelper() {
         RootMAActivity activity = (RootMAActivity) getActivity();
         return activity != null ? activity.getFragmentHelper() : null;
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
     }
 }

@@ -1,17 +1,11 @@
 package com.hiber.hiber;
 
-import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
-import android.content.pm.PackageManager;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
-import android.support.annotation.NonNull;
-import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
-import android.support.v4.content.ContextCompat;
 import android.text.TextUtils;
 import android.view.Window;
 
@@ -26,8 +20,6 @@ import com.hiber.ui.DefaultFragment;
 import org.greenrobot.eventbus.EventBus;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
 
 /*
  * Created by qianli.ma on 2018/6/20 0020.
@@ -69,14 +61,8 @@ public abstract class RootMAActivity extends FragmentActivity {
     /**
      * 权限组 如: Manifest.permission.WRITE_EXTERNAL_STORAGE
      */
-    private String[] permissions = // 默认以下权限需要申请
-            {Manifest.permission.WRITE_EXTERNAL_STORAGE,// 写SD卡
-                    Manifest.permission.READ_EXTERNAL_STORAGE};// 读SD卡
+    private String[] permissions = {};
 
-    /**
-     * 权限请求码
-     */
-    private int permissionCode = 0x100;
 
     /**
      * 项目目录
@@ -116,8 +102,6 @@ public abstract class RootMAActivity extends FragmentActivity {
             setContentView(layoutId);
             // 5.设置状态栏颜色
             StatusBarCompat.setStatusBarColor(this, getResources().getColor(colorStatusBar), false);
-            // 6.初始化权限
-            initPermission();
         } else {
             toast("RootProperty is null \n app crash", 2500);
             Lgg.t(TAG).vv("RootProperty is null");
@@ -148,11 +132,9 @@ public abstract class RootMAActivity extends FragmentActivity {
         layoutId = rootProperty.getLayoutId() <= 0 ? layoutId : rootProperty.getLayoutId();
         TAG = TextUtils.isEmpty(rootProperty.getTAG()) ? TAG : rootProperty.getTAG();
         isSaveInstanceState = rootProperty.isSaveInstanceState();
-        permissions = rootProperty.getPermissions() == null || rootProperty.getPermissions().length <= 0 ? permissions : rootProperty.getPermissions();
-        permissionCode = rootProperty.getPermissionCode() < 0 ? permissionCode : rootProperty.getPermissionCode();
         projectDirName = TextUtils.isEmpty(rootProperty.getProjectDirName()) ? projectDirName : rootProperty.getProjectDirName();
         containId = rootProperty.getContainId() <= 0 ? containId : rootProperty.getContainId();
-        fragmentClazzs = rootProperty.getFragmentClazzs() == null || rootProperty.getFragmentClazzs().length <= 0 ? fragmentClazzs : rootProperty.getFragmentClazzs();
+        fragmentClazzs = rootProperty.getFragmentClazzs() == null | rootProperty.getFragmentClazzs().length <= 0 ? fragmentClazzs : rootProperty.getFragmentClazzs();
     }
 
     @Override
@@ -181,85 +163,6 @@ public abstract class RootMAActivity extends FragmentActivity {
             }
         }
     }
-
-    /**
-     * 初始化权限
-     */
-    private void initPermission() {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
-            // Android N : 6.0 以下直接执行业务逻辑
-            initFragment();
-            Lgg.t(TAG).vv("Method--> " + getClass().getSimpleName() + ":initPermission() below Android N : 6.0");
-        } else {
-            // Android N : 6.0 以上申请权限
-            if (isNeedToRequestPermissions()) {
-                ActivityCompat.requestPermissions(this, permissions, permissionCode);
-                Lgg.t(TAG).vv("Method--> " + getClass().getSimpleName() + ":initPermission() requestPermissions");
-            } else {
-                initFragment();
-                Lgg.t(TAG).vv("Method--> " + getClass().getSimpleName() + ":initPermission() had pass permissions");
-            }
-        }
-    }
-
-    /**
-     * 判断是否需要申请权限
-     *
-     * @return true:需要
-     */
-    private boolean isNeedToRequestPermissions() {
-        Lgg.t(TAG).vv("Method--> " + getClass().getSimpleName() + ":isNeedToRequestPermissions()");
-        // 1.循环检查权限
-        List<Integer> permissionInt = new ArrayList<>();
-        for (String permission : permissions) {
-            permissionInt.add(ContextCompat.checkSelfPermission(this, permission));
-        }
-
-        // 2.判断是否有未通过的权限
-        for (Integer permissionDenied : permissionInt) {
-            if (permissionDenied == PackageManager.PERMISSION_DENIED) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode == permissionCode) {
-            applyBasePermission(permissions, grantResults);
-        }
-    }
-
-    /**
-     * 申请基本的权限
-     *
-     * @param grantResults 权限组
-     */
-    private void applyBasePermission(String[] permissions, int[] grantResults) {
-        Lgg.t(TAG).vv("Method--> " + getClass().getSimpleName() + ":applyBasePermission()");
-        // 1.把所有回调的权限状态添加到自定义集合
-        List<Integer> ints = new ArrayList<>();
-        for (int grantResult : grantResults) {
-            ints.add(grantResult);
-        }
-
-        // 2.判断: 如果有任意一个权限未通过, 则杀死进程(或者自定义处理)
-        if (ints.contains(PackageManager.PERMISSION_DENIED)) {
-            // 如果返回为false--> 结束当前的activity
-            if (!permissonNotPass()) {
-                if (!isFinishing()) {
-                    Lgg.t(TAG).vv("Method--> " + getClass().getSimpleName() + ":finish()");
-                    finish();
-                }
-            }
-        } else {
-            initFragment();
-            createInstallRootDir(projectDirName);
-        }
-    }
-
 
     /**
      * 初始化fragment
@@ -447,14 +350,5 @@ public abstract class RootMAActivity extends FragmentActivity {
     public abstract boolean onBackClick();
 
     /* -------------------------------------------- impl -------------------------------------------- */
-
-    /**
-     * 由外部重写
-     *
-     * @return true:子类实现业务逻辑后不finish. false:finish
-     */
-    public boolean permissonNotPass() {
-        return false;
-    }
 
 }
