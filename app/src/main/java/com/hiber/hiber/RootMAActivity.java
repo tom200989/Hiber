@@ -59,12 +59,6 @@ public abstract class RootMAActivity extends FragmentActivity {
     private boolean isSaveInstanceState;
 
     /**
-     * 权限组 如: Manifest.permission.WRITE_EXTERNAL_STORAGE
-     */
-    private String[] permissions = {};
-
-
-    /**
      * 项目目录
      */
     private String projectDirName = Cons.RootDir;
@@ -102,6 +96,8 @@ public abstract class RootMAActivity extends FragmentActivity {
             setContentView(layoutId);
             // 5.设置状态栏颜色
             StatusBarCompat.setStatusBarColor(this, getResources().getColor(colorStatusBar), false);
+            // 6.初始化Fragment
+            initFragment();
         } else {
             toast("RootProperty is null \n app crash", 2500);
             Lgg.t(TAG).vv("RootProperty is null");
@@ -164,6 +160,8 @@ public abstract class RootMAActivity extends FragmentActivity {
         }
     }
 
+
+
     /**
      * 初始化fragment
      */
@@ -199,7 +197,7 @@ public abstract class RootMAActivity extends FragmentActivity {
     /**
      * 创建安装包根目录
      */
-    private void createInstallRootDir(String dirName) {
+    public void createInstallRootDir(String dirName) {
         Lgg.t(TAG).vv("Method--> " + getClass().getSimpleName() + ":createInstallRootDir()");
         File sdcard = Environment.getExternalStorageDirectory();
         String installDirPath = sdcard.getAbsolutePath() + File.separator + dirName;
