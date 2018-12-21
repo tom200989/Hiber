@@ -46,6 +46,7 @@ public abstract class RootFrag extends Fragment implements FragmentBackHandler {
     private Object attach;
     private String whichFragmentStart;
     private static final String TAG = "RootFrag";
+    
     // 权限相关
     private int permissedCode = 0x101;
     private String[] initPermisseds;// 初始化需要申请的权限
@@ -53,8 +54,8 @@ public abstract class RootFrag extends Fragment implements FragmentBackHandler {
     public static final int ACTION_DEFAULT = 0;// 默认情况
     public static final int ACTION_DENY = -1;// 拒绝情况
     public static final int ACTION_PASS = 1;// 同意情况
-    private HashMap<HashMap<String, Integer>, Integer> permissedActionMap;
-    PermissedListener permissedListener;
+    private HashMap<HashMap<String, Integer>, Integer> permissedActionMap;// < < 权限 , 权限状态 > , 用户行为 >
+    public PermissedListener permissedListener;// 权限申请监听器
 
     @Override
     public void onAttach(Context context) {
@@ -105,6 +106,7 @@ public abstract class RootFrag extends Fragment implements FragmentBackHandler {
         Lgg.t(Cons.TAG).vv("Method--> " + getClass().getSimpleName() + ":return inflateView");
         // 4.加载完视图后的操作--> 由子类重写
         initViewFinish();
+        // 5.初始化权限
         initPermisseds = initPermissed();
         initPermissionMap(initPermisseds);
         return inflateView;
@@ -140,7 +142,7 @@ public abstract class RootFrag extends Fragment implements FragmentBackHandler {
             handlePermissed(false);
         } else {
             // 1.2.因点击申请时将initPermissions置空--> 初始化权限申请行为将不被重复触发
-            // TODO: 2018/12/21 疑问：是否有必要把初始化权限申请全部通过之后的回调提供给开发人员？
+            // TOAT: 2018/12/21 疑问：是否有必要把初始化权限申请全部通过之后的回调提供给开发人员？目前不提供
             //if (permissedListener != null && initPermisseds != null) {
             //permissedListener.permissionResult(true,null);
             //}
@@ -211,7 +213,7 @@ public abstract class RootFrag extends Fragment implements FragmentBackHandler {
      * @call handlePermissed()
      */
     private void checkPermissedState(String[] permissions) {
-        HashMap<HashMap<String,Integer>,Integer> tempHashMap = new HashMap<>();
+        HashMap<HashMap<String, Integer>, Integer> tempHashMap = new HashMap<>();
         for (String permission : permissions) {
 
             int permissedState;// 系统返回的权限状态
@@ -227,12 +229,9 @@ public abstract class RootFrag extends Fragment implements FragmentBackHandler {
                 HashMap<String, Integer> permissedMap = entry.getKey();
                 for (String permissionName : permissedMap.keySet()) {
                     if (permissionName.equalsIgnoreCase(permission)) {
-                        HashMap<String,Integer> map = new HashMap<>();
-                        map.put(permission,permissedState);
-                        tempHashMap.put(map,userAction);
-//                        permissedActionMap.remove(entry);
-//                        permissedActionMap.put(permissedMap, userAction);
-//                        break;
+                        HashMap<String, Integer> map = new HashMap<>();
+                        map.put(permission, permissedState);
+                        tempHashMap.put(map, userAction);
                     }
                 }
             }
@@ -300,7 +299,6 @@ public abstract class RootFrag extends Fragment implements FragmentBackHandler {
         if (getClass().getSimpleName().equalsIgnoreCase(targetFragment)) {
             Lgg.t(Cons.TAG).vv("whichFragmentStart <equal to> targetFragment");
             onNexts(attach, inflateView, whichFragmentStart);
-            // permissedActionMap.clear();
         }
     }
 
