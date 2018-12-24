@@ -194,21 +194,21 @@ public abstract class RootMAActivity extends FragmentActivity {
         }
     }
 
+    /* -------------------------------------------- Normal method -------------------------------------------- */
+
     /**
-     * 创建安装包根目录
+     * 创建根目录
      */
-    public void createInstallRootDir(String dirName) {
-        Lgg.t(TAG).vv("Method--> " + getClass().getSimpleName() + ":createInstallRootDir()");
+    public void createRootDir(String dirName) {
+        Lgg.t(TAG).vv("Method--> " + getClass().getSimpleName() + ":createRootDir()");
         File sdcard = Environment.getExternalStorageDirectory();
         String installDirPath = sdcard.getAbsolutePath() + File.separator + dirName;
         File installDir = new File(installDirPath);
         if (!installDir.exists() | !installDir.isDirectory()) {
             boolean mkdir = installDir.mkdir();
-            Lgg.t(TAG).vv("Method--> " + getClass().getSimpleName() + ":createInstallRootDir() == " + mkdir);
+            Lgg.t(TAG).vv("Method--> " + getClass().getSimpleName() + ":createRootDir() == " + mkdir);
         }
     }
-
-    /* -------------------------------------------- Normal method -------------------------------------------- */
 
     /**
      * 跳转到别的fragment
@@ -346,7 +346,5 @@ public abstract class RootMAActivity extends FragmentActivity {
      * @return true:自定义逻辑 false:super.onBackPress()
      */
     public abstract boolean onBackClick();
-
-    /* -------------------------------------------- impl -------------------------------------------- */
 
 }
