@@ -148,7 +148,8 @@ public class RootHelper {
                 Thread.sleep(delay);
                 if (activity != null) {
                     activity.runOnUiThread(() -> {
-                        Intent intent = new Intent(action);
+                        Intent intent = new Intent();
+                        intent.setAction(action);
                         // 独立任务栈
                         if (isSingleTop) {
                             intent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
