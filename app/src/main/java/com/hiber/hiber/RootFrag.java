@@ -265,7 +265,8 @@ public abstract class RootFrag extends Fragment implements FragmentBackHandler {
         // 确保现在运行的是目标fragment
         if (getClass().getSimpleName().equalsIgnoreCase(targetFragment)) {
             Lgg.t(Cons.TAG).vv("whichFragmentStart <equal to> targetFragment");
-            onNexts(attach, inflateView, whichFragmentStart);
+            onNexts(attach, inflateView, whichFragmentStart);// 抽象
+            onNexts(attach, inflateView, bean.getCurrentFragmentClass());// 可重写(扩展:第三个参数是字节码)
         }
     }
 
@@ -309,6 +310,17 @@ public abstract class RootFrag extends Fragment implements FragmentBackHandler {
     public abstract boolean onBackPresss();
 
     /* -------------------------------------------- override -------------------------------------------- */
+
+    /**
+     * 该方法可重写--> 不同的是第三个参数是字节码
+     *
+     * @param yourBean           你的自定义附带对象(请执行强转)
+     * @param view               填充视图
+     * @param whichFragmentStart 由哪个fragment发起的跳转
+     */
+    public void onNexts(Object yourBean, View view, Class whichFragmentStart) {
+
+    }
 
     /**
      * 由外部重写初始化权限
@@ -373,6 +385,38 @@ public abstract class RootFrag extends Fragment implements FragmentBackHandler {
             RootMAActivity activity = (RootMAActivity) getActivity();
             if (activity != null) {
                 activity.toFrag(current, target, object, isTargetReload);
+            } else {
+                Lgg.t(Cons.TAG).ee("RootHiber--> toFrag() error: RootMAActivity is null");
+            }
+        } catch (Exception e) {
+            Lgg.t(Cons.TAG).ee("Rootfrag error: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * 跳转fragment
+     *
+     * @param current        当前
+     * @param target         目标
+     * @param object         附带
+     * @param isTargetReload 是否重载视图
+     * @param delayMilis     延迟秒数
+     */
+    public void toFrag(Class current, Class target, Object object, boolean isTargetReload, int delayMilis) {
+        try {
+            RootMAActivity activity = (RootMAActivity) getActivity();
+            if (activity != null) {
+                Thread ta = new Thread(() -> {
+                    try {
+                        Thread.sleep(delayMilis);
+                        activity.runOnUiThread(() -> activity.toFrag(current, target, object, isTargetReload));
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                });
+                ta.start();
+                
             } else {
                 Lgg.t(Cons.TAG).ee("RootHiber--> toFrag() error: RootMAActivity is null");
             }

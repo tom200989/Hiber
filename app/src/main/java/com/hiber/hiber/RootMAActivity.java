@@ -78,7 +78,6 @@ public abstract class RootMAActivity extends FragmentActivity {
      */
     private boolean isFullScreen = true;
 
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         Lgg.t(TAG).vv("Method--> " + getClass().getSimpleName() + ":onCreate()");
@@ -99,7 +98,7 @@ public abstract class RootMAActivity extends FragmentActivity {
             // 6.初始化Fragment
             initFragment();
         } else {
-            toast("RootProperty is null \n app crash", 2500);
+            toast("RootProperty is null \n app crash", 2000);
             Lgg.t(TAG).vv("RootProperty is null");
         }
     }
@@ -159,7 +158,6 @@ public abstract class RootMAActivity extends FragmentActivity {
             }
         }
     }
-
 
 
     /**
