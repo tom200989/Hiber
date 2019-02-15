@@ -169,7 +169,7 @@ public class FraHelpers {
                 ft.commitAllowingStateLoss();
                 fm.executePendingTransactions();
             } else {
-                
+
                 /* 如果收到重载指令--> 执行reload(clazz) */
                 if (isReload) {
                     reload(clazz);
@@ -196,7 +196,18 @@ public class FraHelpers {
             // 1.先删除
             String tag = clazz.getSimpleName();
             FragmentTransaction ft1 = fm.beginTransaction();
-            ft1.remove(fm.findFragmentByTag(tag));
+            /*
+             * --> 这里要注销原有的fragment绑定的eventbus
+             * 因为如果不注销的话, 那么在销毁时, 正好碰到开发人员把 isReloadData 设置为 false
+             * 那么即便fragment被remove, eventbus依然持有原来的fragment的对象引用, 造成内存泄漏
+             * 这样的后果就是原来这个fragment里的 @Subcribe(...) 没有被注销, 简单来说就是依然会接收订阅消息
+             * 因为 @Subcribe(...) 是脱离fragment而存在于eventbus自身中的.
+             * 这样当一个新的fragment事务被提交的时候, 会重新创建一个 @Subcribe(..) ,但原来的 @Subcribe(..)
+             * 却没有被释放, 那么 @Subcribe(..) 就会越来越多, 从而会很严重的内存泄漏
+             * */
+            Fragment fragmentByTag = fm.findFragmentByTag(tag);
+            EventBus.getDefault().unregister(fragmentByTag);
+            ft1.remove(fragmentByTag);
             ft1.commitAllowingStateLoss();
             fm.executePendingTransactions();
 
