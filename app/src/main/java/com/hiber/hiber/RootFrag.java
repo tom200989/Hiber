@@ -33,6 +33,13 @@ public abstract class RootFrag extends Fragment implements FragmentBackHandler {
     public FragmentActivity activity;
     public Unbinder unbinder;
 
+    /*
+     * fragment缓存: 记录从哪个fragment跳转过来
+     * 以解决在permission没有完全通过时(此时Eventbus没有注册), 获取不到上一个跳转过来的fragment的情况
+     * 因为当前界面有可能是从其他很多不同的fragment跳转过来的
+     */
+    public static Class lastFrag;
+
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
@@ -147,7 +154,7 @@ public abstract class RootFrag extends Fragment implements FragmentBackHandler {
     /* -------------------------------------------- helper -------------------------------------------- */
 
     /**
-     * 跳转到别的fragment
+     * 跳转fragment
      *
      * @param current        当前
      * @param target         目标
@@ -158,7 +165,41 @@ public abstract class RootFrag extends Fragment implements FragmentBackHandler {
         try {
             RootMAActivity activity = (RootMAActivity) getActivity();
             if (activity != null) {
+                lastFrag = current;// 保存到缓存
                 activity.toFrag(current, target, object, isTargetReload);
+            } else {
+                Lgg.t(Cons.TAG).ee("RootHiber--> toFrag() error: RootMAActivity is null");
+            }
+        } catch (Exception e) {
+            Lgg.t(Cons.TAG).ee("Rootfrag error: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * 跳转fragment
+     *
+     * @param current        当前
+     * @param target         目标
+     * @param object         附带
+     * @param isTargetReload 是否重载视图
+     * @param delayMilis     延迟秒数
+     */
+    public void toFrag(Class current, Class target, Object object, boolean isTargetReload, int delayMilis) {
+        try {
+            RootMAActivity activity = (RootMAActivity) getActivity();
+            if (activity != null) {
+                Thread ta = new Thread(() -> {
+                    try {
+                        Thread.sleep(delayMilis);
+                        lastFrag = current;// 保存到缓存
+                        activity.runOnUiThread(() -> activity.toFrag(current, target, object, isTargetReload));
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                });
+                ta.start();
+
             } else {
                 Lgg.t(Cons.TAG).ee("RootHiber--> toFrag() error: RootMAActivity is null");
             }
