@@ -81,6 +81,17 @@ public abstract class RootFrag extends Fragment implements FragmentBackHandler {
      */
     @Subscribe(threadMode = ThreadMode.MAIN, sticky = true)
     public void getData(FragBean bean) {
+        /*
+         * 重要: 移除传输完成的粘性事件
+         * 这里为什么要移除？因为在fragment相互跳转时
+         * poststicky对象会创建多个, 而且传递的数据都是Fragbean类型
+         * 这样会导致往后每个fragment创建的订阅者 @Subcribe(...)
+         * 都会接收到前面其他fragment跳转传输的事件
+         * 这些事件实际上是与当前fragment无关的, 如果在压力测试下
+         * 会造成内存溢出
+         *
+         * */
+        EventBus.getDefault().removeStickyEvent(bean);
         Lgg.t(Cons.TAG).vv("Method--> " + getClass().getSimpleName() + ":getData()");
         Object attach = bean.getAttach();
         String whichFragmentStart = bean.getCurrentFragmentClass().getSimpleName();
