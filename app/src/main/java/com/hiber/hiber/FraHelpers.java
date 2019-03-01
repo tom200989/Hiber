@@ -66,14 +66,14 @@ public class FraHelpers {
      * @param initClass 初始的fragment class,如:AFragment.class
      * @param contain   fragment容器ID,如:R.id.fragmentlayout
      */
-    public FraHelpers(FragmentActivity activity, Class[] clazzs, Class initClass, int contain) {
+    public FraHelpers(FragmentActivity activity, Class[] clazzs, Class initClass, int contain, Object attach) {
         this.activity = activity;
         this.fm = activity.getSupportFragmentManager();
         this.clazzs = clazzs;
         this.initClass = initClass;
         this.contain = contain;
         this.tags = getTags();
-        init(initClass);// 初始化fragment
+        init(initClass, attach);// 初始化fragment
     }
 
     /**
@@ -81,7 +81,7 @@ public class FraHelpers {
      *
      * @param clazz 初始化fragment
      */
-    private void init(Class clazz) {
+    private void init(Class clazz, Object attach) {
         try {
             // 开启事务
             FragmentTransaction ft = fm.beginTransaction();
@@ -93,7 +93,7 @@ public class FraHelpers {
             /* 这一句一定要有, 即commit()后要求FT立刻执行, 否则是异步执行 */
             fm.executePendingTransactions();
             // 首次触发RootFrag里的onNexts()执行
-            triggerInit(clazz);
+            triggerInit(clazz, attach);
         } catch (Exception e) {
             e.printStackTrace();
             Toast.makeText(activity, e.getMessage(), Toast.LENGTH_SHORT).show();
@@ -105,10 +105,11 @@ public class FraHelpers {
      *
      * @param clazz 首次启动触发的fragment字节码
      */
-    private void triggerInit(Class clazz) {
+    private void triggerInit(Class clazz, Object attach) {
         FragBean fragBean = new FragBean();
         fragBean.setCurrentFragmentClass(clazz);
         fragBean.setTargetFragmentClass(clazz);
+        fragBean.setAttach(attach);
         EventBus.getDefault().postSticky(fragBean);
     }
 

@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.os.Process;
 import android.widget.Toast;
 
+import com.hiber.bean.SkipBean;
 import com.hiber.tools.Lgg;
 
 /**
@@ -58,29 +59,7 @@ public class RootHelper {
             activity.runOnUiThread(() -> Toast.makeText(activity, tip, finalDuration).show());
         }
     }
-
-    /**
-     * 跳转(默认方式)
-     *
-     * @param activity 当前环境
-     * @param clazz    目标
-     * @param isFinish 是否结束当前
-     */
-    public static void toActivity(Activity activity, Class<?> clazz, boolean isFinish) {
-        toActivity(activity, clazz, true, isFinish, false, 0);
-    }
-
-    /**
-     * 跳转(隐式)
-     *
-     * @param activity 当前环境
-     * @param action   目标
-     * @param isFinish 是否结束当前
-     */
-    public static void toActivityImplicit(Activity activity, String action, boolean isFinish) {
-        toActivityImplicit(activity, action, true, isFinish, false, 0);
-    }
-
+    
     /**
      * 跳转
      *
@@ -90,18 +69,25 @@ public class RootHelper {
      * @param overridepedding F:消除转场闪烁 T:保留转场闪烁
      * @param delay           延迟
      */
-    public static void toActivity(final Activity activity,// 上下文
+    private static void toActivity(final Activity activity,// 上下文
                                   final Class<?> clazz,// 目标
                                   final boolean isSingleTop,// 独立任务栈
                                   final boolean isFinish,// 结束当前
                                   boolean overridepedding, // 转场
-                                  final int delay) {// 延迟
+                                  final int delay, // 延迟
+                                  final SkipBean skipBean // 是否传递数据
+
+    ) {
         new Thread(() -> {
             try {
                 Thread.sleep(delay);
                 if (activity != null) {
                     activity.runOnUiThread(() -> {
                         Intent intent = new Intent(activity, clazz);
+                        // 传递序列化
+                        if (skipBean != null) {
+                            intent.putExtra(RootMAActivity.INTENT_NAME, skipBean);
+                        }
                         // 独立任务栈
                         if (isSingleTop) {
                             intent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
@@ -142,7 +128,9 @@ public class RootHelper {
                                           final boolean isSingleTop,// 独立任务栈
                                           final boolean isFinish,// 结束当前
                                           boolean overridepedding, // 转场
-                                          final int delay) {// 延迟
+                                          final int delay, // 延迟
+                                          final SkipBean skipBean // 是否传递数据
+    ) {
         new Thread(() -> {
             try {
                 Thread.sleep(delay);
@@ -150,6 +138,10 @@ public class RootHelper {
                     activity.runOnUiThread(() -> {
                         Intent intent = new Intent();
                         intent.setAction(action);
+                        // 传递序列化
+                        if (skipBean != null) {
+                            intent.putExtra(RootMAActivity.INTENT_NAME, skipBean);
+                        }
                         // 独立任务栈
                         if (isSingleTop) {
                             intent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
@@ -174,4 +166,6 @@ public class RootHelper {
 
         }).start();
     }
+
+
 }

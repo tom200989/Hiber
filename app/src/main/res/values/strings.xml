@@ -1,3 +1,21 @@
 <resources>
     <string name="app_name">Hiber</string>
+    <string name="wd_title">Permission</string>
+    <string name="wd_content">The current function is not available, and related permissions need to be opened synchronously</string>
+    <string name="wd_cancel">Cancel</string>
+    <string name="wd_ok">OK</string>
+
+    <string name="ACTION_ERR">
+        跳转目标Activity: [$1%s]失败,原因:
+        \n1.目标activity在manifest里没有配置Intent-filter:action路径.
+        \n2.action没有设置为目标Activity的绝对路径
+    </string>
+    <string name="INIT_ERR">
+        当前Activity的action或category没有配置或配置不符合规范请检查:
+        \n1.目标activity在manifest里没有配置Intent-filter:action路径.
+        \n2.action没有设置为目标Activity的绝对路径
+        \n3.category没有添加android.intent.category.DEFAULT属性
+    </string>
+    <string name="ROOT_PROPERTY_ERR">RootProperty不能为空\n应用闪退</string>
+    <string name="INFLECT_ERR">检测action机制反射异常</string>
 </resources>

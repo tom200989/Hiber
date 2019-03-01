@@ -1,4 +1,5 @@
 apply plugin: 'com.android.library'
+//apply plugin: 'com.android.application'
 
 android {
     compileSdkVersion 28
@@ -8,6 +9,7 @@ android {
         targetSdkVersion 28
         versionCode 1
         versionName "1.0"
+        multiDexEnabled true
     }
     buildTypes {
 
@@ -46,4 +48,8 @@ dependencies {
     api 'com.jakewharton:butterknife:9.0.0-rc2'
     //noinspection GradleDependency
     annotationProcessor 'com.jakewharton:butterknife-compiler:9.0.0-rc2'
+    
+    // multiDex分包处理
+    //noinspection GradleDependency
+    api 'com.android.support:multidex:1.0.1'
 }

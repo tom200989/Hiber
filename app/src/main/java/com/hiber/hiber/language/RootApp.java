@@ -1,10 +1,11 @@
 package com.hiber.hiber.language;
 
-import android.app.Application;
 import android.content.Context;
 import android.content.res.Configuration;
+import android.support.multidex.MultiDexApplication;
 
-public class RootApp extends Application {
+/* 必须使用MultiDexApplication配合依赖multidex:1.0.1使用 */
+public class RootApp extends MultiDexApplication {
 
     @Override
     public void onCreate() {

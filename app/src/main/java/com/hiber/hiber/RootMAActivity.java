@@ -3,13 +3,18 @@ package com.hiber.hiber;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
+import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.text.TextUtils;
 import android.view.Window;
 
 import com.hiber.bean.RootProperty;
+import com.hiber.bean.SkipBean;
 import com.hiber.cons.Cons;
 import com.hiber.hiber.language.LangHelper;
 import com.hiber.tools.Lgg;
@@ -19,7 +24,9 @@ import com.hiber.ui.DefaultFragment;
 
 import org.greenrobot.eventbus.EventBus;
 
-import java.io.File;
+import java.lang.reflect.Method;
+import java.util.HashMap;
+import java.util.List;
 
 /*
  * Created by qianli.ma on 2018/6/20 0020.
@@ -78,29 +85,179 @@ public abstract class RootMAActivity extends FragmentActivity {
      */
     private boolean isFullScreen = true;
 
+    /**
+     * 存储「frag绝对路径, frag字节码」
+     */
+    private HashMap<String, Class> classFragMap = new HashMap<>();
+
+    // 记录当前的初始化状态
+    private String FLAG_ONCREATED = "onCreate";
+    private String FLAG_NEW_INTENT = "onNewIntent";
+    private String FLAG_CURRENT = FLAG_ONCREATED;// 默认onCreated
+
+    /**
+     * 通过extra方式需要接收的信标符号
+     */
+    public static String INTENT_NAME = "SkipBean";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        Lgg.t(TAG).vv("Method--> " + getClass().getSimpleName() + ":onCreate()");
-        // 1.获取初始化配置对象
-        rootProperty = initProperty();
-        if (rootProperty != null) {
-            // 2.分发配置
-            dispatherProperty(rootProperty);
-            // 3.设置无标题栏(必须位于 super.onCreate(savedInstanceState) 之上)
-            if (isFullScreen) {
-                requestWindowFeature(Window.FEATURE_NO_TITLE);
+
+        // 0.检测action与category是否符合规范
+        boolean isActionCategoryMatch = checkActionCategory();
+        if (isActionCategoryMatch) {// 0.1.符合条件则正常执行
+            FLAG_CURRENT = FLAG_ONCREATED;
+            Lgg.t(TAG).vv("Method--> " + getClass().getSimpleName() + ":onCreate()");
+            // 1.获取初始化配置对象
+            rootProperty = initProperty();
+            if (rootProperty != null) {// 属性对象不为空
+                // 2.分发配置
+                dispatherProperty(rootProperty);
+                // 3.设置无标题栏(必须位于 super.onCreate(savedInstanceState) 之上)
+                if (isFullScreen) {
+                    requestWindowFeature(Window.FEATURE_NO_TITLE);
+                }
+                super.onCreate(savedInstanceState);
+                // 4.填充视图
+                setContentView(layoutId);
+                // 5.设置状态栏颜色
+                StatusBarCompat.setStatusBarColor(this, getResources().getColor(colorStatusBar), false);
+                // 6.处理从其他组件传递过来的数据
+                handleIntentExtra(getIntent());
+
+            } else {// 属性对象为空
+                String proErr = getString(R.string.ROOT_PROPERTY_ERR);
+                toast(proErr, 5000);
+                Lgg.t(TAG).vv(proErr);
             }
-            super.onCreate(savedInstanceState);
-            // 4.填充视图
-            setContentView(layoutId);
-            // 5.设置状态栏颜色
-            StatusBarCompat.setStatusBarColor(this, getResources().getColor(colorStatusBar), false);
-            // 6.初始化Fragment
-            initFragment();
-        } else {
-            toast("RootProperty is null \n app crash", 2000);
-            Lgg.t(TAG).vv("RootProperty is null");
+
+        } else {// 0.1.开发人员没有按照规定配置manifest
+            String err = getString(R.string.INIT_ERR);
+            toast(err, 5000);
+            Lgg.t(TAG).vv(err);
         }
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        FLAG_CURRENT = FLAG_NEW_INTENT;
+        Lgg.t(TAG).vv("Method--> " + getClass().getSimpleName() + ":onNewIntent()");
+        super.onNewIntent(intent);
+        handleIntentExtra(intent);
+    }
+
+    /**
+     * 处理从其他组件传递过来的数据
+     *
+     * @param intent 意图
+     */
+    private void handleIntentExtra(Intent intent) {
+        // 1.获取序列流
+        SkipBean skipBean = (SkipBean) intent.getSerializableExtra(INTENT_NAME);
+        // 2.判断是否为自身AC
+        String currentActivityClassName = getClass().getName();
+        String targetActivityClassName = skipBean.getTargetActivityClassName();
+        if (targetActivityClassName.equalsIgnoreCase(currentActivityClassName)) {
+            // 是自身AC
+            Class targetFragClass = searchFragClassByName(skipBean.getTargetFragmentClassName());
+            int classFragIndex = searchFragIndexByClass(targetFragClass);
+            Object attach = skipBean.getAttach();
+            boolean isTargetReload = skipBean.isTargetReload();
+            if (FLAG_CURRENT.equalsIgnoreCase(FLAG_NEW_INTENT)) {
+                toFrag(getClass(), targetFragClass, attach, isTargetReload);
+            } else {
+                initFragment(classFragIndex, attach);
+            }
+        } else {
+            // 不是自身AC(推送)
+            try {
+                Activity activity = this;
+                boolean isSingleTop = false;
+                boolean isFinish = false;
+                boolean isOverridePending = false;
+                int delay = 0;
+                RootHelper.toActivityImplicit(activity, targetActivityClassName, isSingleTop, isFinish, isOverridePending, delay, skipBean);
+            } catch (Exception e) {
+                e.printStackTrace();
+                String acError = getString(R.string.ACTION_ERR);
+                String des = String.format(acError, targetActivityClassName);
+                Lgg.t(Cons.TAG).ee(des);
+                toast(des, 5000);
+            }
+        }
+
+        // 恢复标记位
+        FLAG_CURRENT = FLAG_ONCREATED;
+    }
+
+    /**
+     * 检查开发人员是否配置了action以及category, action是否符合规范(绝对路径)
+     *
+     * @return T:符合
+     */
+    @SuppressLint("PrivateApi") // 消除「packageManager.getClass().getDeclaredMethod」的警告
+    @SuppressWarnings("unchecked")// 消除「method.invoke(packageManager, getPackageName()」的警告
+    private boolean checkActionCategory() {
+
+        // 如果是小于Android 4.4, 则不能使用反射, PackageManager没有对应的API
+        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.KITKAT) {
+            return true;
+        }
+
+        // > 4.4 , 使用反射调用PackageManager的获取全部intent-filter
+        try {
+            PackageManager packageManager = getPackageManager();
+            Method method = packageManager.getClass().getDeclaredMethod("getAllIntentFilters", String.class);
+            method.setAccessible(true);
+            List<IntentFilter> intentFilters = (List<IntentFilter>) method.invoke(packageManager, getPackageName());
+            for (IntentFilter intentFilter : intentFilters) {
+                // 检测<action>中是否配置自身类的绝对路径--> 必须强制要求外部人员在action里配置的是自身AC的绝对路径
+                boolean isSetActionBySelfName = intentFilter.hasAction(getClass().getName());
+                // 检测<category>是否配置DEFAULT标签
+                boolean isSetCategoryByDefault = intentFilter.hasCategory("android.intent.category.DEFAULT");
+                // <action> 与 <category>必须同时符合条件
+                if (isSetActionBySelfName & isSetCategoryByDefault) {
+                    return true;
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            String inflectErr = getString(R.string.INFLECT_ERR);
+            Lgg.t(Cons.TAG).ee(inflectErr);
+        }
+        return false;
+    }
+
+    /**
+     * 根据frag的绝对路径获取到对应的frag字节码
+     *
+     * @param targetFragmentClassName fragment的绝对路径
+     * @return frag字节码
+     */
+    private Class searchFragClassByName(String targetFragmentClassName) {
+        if (!TextUtils.isEmpty(targetFragmentClassName)) {
+            for (String fragName : classFragMap.keySet()) {
+                if (fragName.equalsIgnoreCase(targetFragmentClassName)) {
+                    return classFragMap.get(fragName);
+                }
+            }
+        }
+        return fragmentClazzs[0];
+    }
+
+    /**
+     * 根据frag字节码找到该字节码在数组中的索引
+     *
+     * @param currentClass frag字节码
+     * @return 对应的索引
+     */
+    private int searchFragIndexByClass(Class currentClass) {
+        for (int i = 0; i < fragmentClazzs.length; i++) {
+            if (currentClass == fragmentClazzs[i]) {
+                return i;
+            }
+        }
+        return 0;
     }
 
     /**
@@ -120,6 +277,7 @@ public abstract class RootMAActivity extends FragmentActivity {
      * @param rootProperty 配置
      */
     private void dispatherProperty(RootProperty rootProperty) {
+        // 初始化赋值
         Lgg.t(TAG).vv("Method--> " + getClass().getSimpleName() + ":dispatherProperty()");
         Lgg.t(TAG).vv(rootProperty.toString());
         isFullScreen = rootProperty.isFullScreen();
@@ -129,7 +287,9 @@ public abstract class RootMAActivity extends FragmentActivity {
         isSaveInstanceState = rootProperty.isSaveInstanceState();
         projectDirName = TextUtils.isEmpty(rootProperty.getProjectDirName()) ? projectDirName : rootProperty.getProjectDirName();
         containId = rootProperty.getContainId() <= 0 ? containId : rootProperty.getContainId();
-        fragmentClazzs = rootProperty.getFragmentClazzs() == null | rootProperty.getFragmentClazzs().length <= 0 ? fragmentClazzs : rootProperty.getFragmentClazzs();
+        fragmentClazzs = rootProperty.getFragmentClazzs() == null || rootProperty.getFragmentClazzs().length <= 0 ? fragmentClazzs : rootProperty.getFragmentClazzs();
+        // 将fragment转换成map形式
+        saveClassMap(fragmentClazzs);
     }
 
     @Override
@@ -159,17 +319,16 @@ public abstract class RootMAActivity extends FragmentActivity {
         }
     }
 
-
     /**
      * 初始化fragment
      */
-    private void initFragment() {
+    private void initFragment(int initIndex, Object attach) {
         Lgg.t(TAG).vv("Method--> " + getClass().getSimpleName() + ":initFragment()");
         // 容器
         int contain = containId;
-        Class firstFrag = fragmentClazzs[0];
+        Class firstFrag = fragmentClazzs[initIndex];
         // 初始化fragment调度器
-        initFragmentSchedule(contain, firstFrag);
+        initFragmentSchedule(contain, firstFrag, attach);
     }
 
     /**
@@ -178,12 +337,12 @@ public abstract class RootMAActivity extends FragmentActivity {
      * @param contain   容器
      * @param firstFrag 首屏
      */
-    private void initFragmentSchedule(int contain, Class firstFrag) {
+    private void initFragmentSchedule(int contain, Class firstFrag, Object attach) {
         Lgg.t(TAG).vv("Method--> " + getClass().getSimpleName() + ":initFragmentSchedule()");
         if (fraHelpers == null) {
             synchronized (FraHelpers.class) {
                 if (fraHelpers == null) {
-                    fraHelpers = new FraHelpers(this, fragmentClazzs, firstFrag, contain);
+                    fraHelpers = new FraHelpers(this, fragmentClazzs, firstFrag, contain, attach);
                     Lgg.t(TAG).vv("Method--> " + getClass().getSimpleName() + ":new FraHelpers()");
                 }
             }
@@ -192,21 +351,55 @@ public abstract class RootMAActivity extends FragmentActivity {
         }
     }
 
-    /* -------------------------------------------- Normal method -------------------------------------------- */
-
     /**
-     * 创建根目录
+     * 将字节码list转换为hashmap
+     *
+     * @param fragmentClazzs 需要转换的集合
      */
-    public void createRootDir(String dirName) {
-        Lgg.t(TAG).vv("Method--> " + getClass().getSimpleName() + ":createRootDir()");
-        File sdcard = Environment.getExternalStorageDirectory();
-        String installDirPath = sdcard.getAbsolutePath() + File.separator + dirName;
-        File installDir = new File(installDirPath);
-        if (!installDir.exists() | !installDir.isDirectory()) {
-            boolean mkdir = installDir.mkdir();
-            Lgg.t(TAG).vv("Method--> " + getClass().getSimpleName() + ":createRootDir() == " + mkdir);
+    private void saveClassMap(Class[] fragmentClazzs) {
+        for (Class clz : fragmentClazzs) {
+            String clzAbsoluteName = clz.getName();
+            classFragMap.put(clzAbsoluteName, clz);
         }
     }
+
+    /**
+     * 封装传输对象
+     *
+     * @param classWhichFragmentStart 哪个fragment跳转的
+     * @param targetFragmentClass     跳转到哪个目标Fragment
+     * @param attach                  附件
+     * @return 传输对象
+     */
+    private FragBean transferFragbean(Class classWhichFragmentStart, Class targetFragmentClass, Object attach) {
+        // 1.创建一个新的传输对象
+        FragBean fragBean = new FragBean();
+        // 2.检测传递进来的参数是否为fragment类型
+        boolean whichIsFragment = Fragment.class.isAssignableFrom(classWhichFragmentStart);
+        boolean targetIsFragment = Fragment.class.isAssignableFrom(targetFragmentClass);
+        if (whichIsFragment & targetIsFragment) {// 同时符合条件
+            fragBean.setCurrentFragmentClass(classWhichFragmentStart);
+            fragBean.setTargetFragmentClass(targetFragmentClass);
+
+        } else if (whichIsFragment & !targetIsFragment) {// target不符合条件--> 使用which填充
+            fragBean.setCurrentFragmentClass(classWhichFragmentStart);
+            fragBean.setTargetFragmentClass(classWhichFragmentStart);
+
+        } else if (!whichIsFragment & targetIsFragment) {// which不符合条件--> 使用target填充
+            fragBean.setCurrentFragmentClass(targetFragmentClass);
+            fragBean.setTargetFragmentClass(targetFragmentClass);
+
+        } else {// 两个同时不为true--> 则默认跳转第一个
+            fragBean.setCurrentFragmentClass(fragmentClazzs[0]);
+            fragBean.setTargetFragmentClass(fragmentClazzs[0]);
+        }
+        // 3.设置附件
+        fragBean.setAttach(attach == null ? "" : attach);
+        // 4.返回封装后对象
+        return fragBean;
+    }
+
+    /* -------------------------------------------- public method -------------------------------------------- */
 
     /**
      * 跳转到别的fragment
@@ -217,37 +410,12 @@ public abstract class RootMAActivity extends FragmentActivity {
      * @param isTargetReload          是否重载视图
      */
     public void toFrag(Class classWhichFragmentStart, Class targetFragmentClass, Object attach, boolean isTargetReload) {
-        FragBean fragBean = new FragBean();
-        fragBean.setCurrentFragmentClass(classWhichFragmentStart);
-        fragBean.setTargetFragmentClass(targetFragmentClass);
-        fragBean.setAttach(attach == null ? "" : attach);
+        // 0.转换并封装传输对象
+        FragBean fragBean = transferFragbean(classWhichFragmentStart, targetFragmentClass, attach);
         // 1.先跳转
-        fraHelpers.transfer(targetFragmentClass, isTargetReload);
-        // 2.在传输(否则会出现nullPointException)
+        fraHelpers.transfer(fragBean.getTargetFragmentClass(), isTargetReload);
+        // 2.再传输(否则会出现nullPointException)
         EventBus.getDefault().postSticky(fragBean);
-    }
-
-    /**
-     * 获取fragment调度器
-     *
-     * @return fragment调度器
-     */
-    public FraHelpers getFragmentHelper() {
-        return fraHelpers;
-    }
-
-    /**
-     * @param target 移除指定的fragment
-     */
-    public void removeFrag(Class target) {
-        fraHelpers.remove(target);
-    }
-
-    /**
-     * 结束当前Activit
-     */
-    public void finishOver() {
-        RootHelper.finishOver(this);
     }
 
     /**
@@ -275,53 +443,6 @@ public abstract class RootMAActivity extends FragmentActivity {
      */
     public void toast(int stringId, int duration) {
         RootHelper.toast(this, getString(stringId), duration);
-    }
-
-    /**
-     * 跳转(默认方式)
-     *
-     * @param activity 当前环境
-     * @param clazz    目标
-     * @param isFinish 是否默认方式
-     */
-    public void toActivity(Activity activity, Class<?> clazz, boolean isFinish) {
-        RootHelper.toActivity(activity, clazz, isFinish);
-    }
-
-    /**
-     * 跳转(隐式)
-     *
-     * @param activity 当前环境
-     * @param action   目标
-     * @param isFinish 是否默认方式
-     */
-    public void toActivityImplicit(Activity activity, String action, boolean isFinish) {
-        RootHelper.toActivityImplicit(activity, action, isFinish);
-    }
-
-    /**
-     * 跳转(自定义方式)
-     *
-     * @param activity 当前环境
-     * @param clazz    目标
-     * @param isFinish 是否默认方式
-     */
-    public void toActivity(Activity activity, Class<?> clazz, boolean isSigleTop, boolean isFinish, boolean overpedding, int delay) {
-        RootHelper.toActivity(activity, clazz, isSigleTop, isFinish, overpedding, delay);
-    }
-
-    /**
-     * 跳转(隐式)
-     *
-     * @param activity    上下文
-     * @param action      目标
-     * @param isSigleTop  独立站
-     * @param isFinish    是否结束当前
-     * @param overpedding F:消除转场闪烁 T:保留转场闪烁
-     * @param delay       延迟
-     */
-    public void toActivityImplicit(Activity activity, String action, boolean isSigleTop, boolean isFinish, boolean overpedding, int delay) {
-        RootHelper.toActivityImplicit(activity, action, isSigleTop, isFinish, overpedding, delay);
     }
 
     /* -------------------------------------------- abstract -------------------------------------------- */

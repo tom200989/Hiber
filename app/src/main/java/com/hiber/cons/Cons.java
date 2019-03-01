@@ -4,10 +4,17 @@ package com.hiber.cons;
  */
 
 public class Cons {
+
     /**
      * 默认日志标记
      */
     public static String TAG = "Hiber";// 日志标记
+
+    /**
+     * 权限流程标记
+     */
+    public static String TAG2 = "PermissW";// 权限流程标记
+
     /**
      * 默认的工程目录名
      */

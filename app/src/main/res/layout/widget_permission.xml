@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.hiber.tools.layout.PercentRelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <!-- 背景 -->
+    <ImageView
+        android:id="@+id/iv_bg"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:alpha="0.6"
+        android:background="#cccccc" />
+
+    <!-- 内容区 -->
+    <com.hiber.tools.layout.PercentLinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:background="@drawable/bg_wd_permis"
+        android:orientation="vertical"
+        app:layout_marginEndPercent="5%w"
+        app:layout_marginTopPercent="5%w"
+        app:layout_widthPercent="80%w">
+
+        <com.hiber.tools.layout.PercentRelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <!-- 自定义区域 -->
+            <com.hiber.tools.layout.PercentRelativeLayout
+                android:id="@+id/rl_content_self"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+            </com.hiber.tools.layout.PercentRelativeLayout>
+
+            <!-- 默认区域(30%h) -->
+            <com.hiber.tools.layout.PercentRelativeLayout
+                android:id="@+id/rl_content_default"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:layout_heightPercent="30%h">
+
+                <TextView
+                    android:id="@+id/tv_title_default"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/wd_title"
+                    android:textColor="@android:color/black"
+                    android:textStyle="bold"
+                    app:layout_marginPercent="5%w"
+                    app:layout_textSizePercent="10%h" />
+
+                <TextView
+                    android:id="@+id/tv_content_default"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/tv_title_default"
+                    android:layout_centerHorizontal="true"
+                    android:text="@string/wd_content"
+                    android:textColor="@android:color/darker_gray"
+                    app:layout_textSizePercent="8%h"
+                    app:layout_widthPercent="90%w" />
+
+            </com.hiber.tools.layout.PercentRelativeLayout>
+
+        </com.hiber.tools.layout.PercentRelativeLayout>
+
+        <!-- OK + CANCEL -->
+        <com.hiber.tools.layout.PercentRelativeLayout
+            android:id="@+id/rl_ok_cancel"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:layout_heightPercent="8%h">
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="0.5dp"
+                android:background="@android:color/darker_gray" />
+
+            <TextView
+                android:id="@+id/tv_cancel"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                android:text="@string/wd_cancel"
+                app:layout_textSizePercent="30%h"
+                app:layout_widthPercent="50%w" />
+
+            <TextView
+                android:id="@+id/tv_ok"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_alignParentEnd="true"
+                android:gravity="center"
+                android:text="@string/wd_ok"
+                android:textColor="@android:color/black"
+                android:textStyle="bold"
+                app:layout_textSizePercent="30%h"
+                app:layout_widthPercent="50%w" />
+
+        </com.hiber.tools.layout.PercentRelativeLayout>
+
+    </com.hiber.tools.layout.PercentLinearLayout>
+
+</com.hiber.tools.layout.PercentRelativeLayout>
