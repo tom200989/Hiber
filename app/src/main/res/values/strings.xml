@@ -18,4 +18,6 @@
     </string>
     <string name="ROOT_PROPERTY_ERR">RootProperty不能为空\n应用闪退</string>
     <string name="INFLECT_ERR">检测action机制反射异常</string>
+    <string name="SINGLE_TASK_ERR">检测LaunchMode发生异常\n请手动检测activity是否配置了singleTask模式</string>
+    <string name="SINGLE_TASK_TIP">当前activity没有设置为singleTask模式\n请务必设置</string>
 </resources>

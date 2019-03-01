@@ -2,9 +2,11 @@ package com.hiber.hiber;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
@@ -106,35 +108,42 @@ public abstract class RootMAActivity extends FragmentActivity {
         // 0.检测action与category是否符合规范
         boolean isActionCategoryMatch = checkActionCategory();
         if (isActionCategoryMatch) {// 0.1.符合条件则正常执行
-            FLAG_CURRENT = FLAG_ONCREATED;
-            Lgg.t(TAG).vv("Method--> " + getClass().getSimpleName() + ":onCreate()");
-            // 1.获取初始化配置对象
-            rootProperty = initProperty();
-            if (rootProperty != null) {// 属性对象不为空
-                // 2.分发配置
-                dispatherProperty(rootProperty);
-                // 3.设置无标题栏(必须位于 super.onCreate(savedInstanceState) 之上)
-                if (isFullScreen) {
-                    requestWindowFeature(Window.FEATURE_NO_TITLE);
-                }
-                super.onCreate(savedInstanceState);
-                // 4.填充视图
-                setContentView(layoutId);
-                // 5.设置状态栏颜色
-                StatusBarCompat.setStatusBarColor(this, getResources().getColor(colorStatusBar), false);
-                // 6.处理从其他组件传递过来的数据
-                handleIntentExtra(getIntent());
 
-            } else {// 属性对象为空
-                String proErr = getString(R.string.ROOT_PROPERTY_ERR);
-                toast(proErr, 5000);
-                Lgg.t(TAG).vv(proErr);
+            if (checkSingleTask()) {// 0.2.singleTask配置符合
+                FLAG_CURRENT = FLAG_ONCREATED;
+                Lgg.t(TAG).vv("Method--> " + getClass().getSimpleName() + ":onCreate()");
+                // 1.获取初始化配置对象
+                rootProperty = initProperty();
+                if (rootProperty != null) {// 属性对象不为空
+                    // 2.分发配置
+                    dispatherProperty(rootProperty);
+                    // 3.设置无标题栏(必须位于 super.onCreate(savedInstanceState) 之上)
+                    if (isFullScreen) {
+                        requestWindowFeature(Window.FEATURE_NO_TITLE);
+                    }
+                    super.onCreate(savedInstanceState);
+                    // 4.填充视图
+                    setContentView(layoutId);
+                    // 5.设置状态栏颜色
+                    StatusBarCompat.setStatusBarColor(this, getResources().getColor(colorStatusBar), false);
+                    // 6.处理从其他组件传递过来的数据
+                    handleIntentExtra(getIntent());
+
+                } else {// 属性对象为空
+                    String proErr = getString(R.string.ROOT_PROPERTY_ERR);
+                    toast(proErr, 5000);
+                    Lgg.t(TAG).ee(proErr);
+                }
+            } else {// 没有配置singleTask
+                String err = getString(R.string.SINGLE_TASK_TIP);
+                toast(err, 5000);
+                Lgg.t(TAG).ee(err);
             }
 
         } else {// 0.1.开发人员没有按照规定配置manifest
             String err = getString(R.string.INIT_ERR);
             toast(err, 5000);
-            Lgg.t(TAG).vv(err);
+            Lgg.t(TAG).ee(err);
         }
     }
 
@@ -226,6 +235,27 @@ public abstract class RootMAActivity extends FragmentActivity {
             Lgg.t(Cons.TAG).ee(inflectErr);
         }
         return false;
+    }
+
+    /**
+     * @return 检查是否配置了singleTask
+     */
+    private boolean checkSingleTask() {
+        ComponentName componentName = getComponentName();
+        ActivityInfo activityInfo;
+        try {
+            activityInfo = getPackageManager().getActivityInfo(componentName, PackageManager.GET_META_DATA);
+            int launchMode = activityInfo.launchMode;
+            if (launchMode != ActivityInfo.LAUNCH_SINGLE_TASK) {
+                return false;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            String singleTaskErr = getString(R.string.SINGLE_TASK_ERR);
+            Lgg.t(Cons.TAG).ee(singleTaskErr);
+            toast(singleTaskErr, 5000);
+        }
+        return true;
     }
 
     /**
