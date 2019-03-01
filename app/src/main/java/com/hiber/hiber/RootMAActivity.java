@@ -134,6 +134,7 @@ public abstract class RootMAActivity extends FragmentActivity {
                     toast(proErr, 5000);
                     Lgg.t(TAG).ee(proErr);
                 }
+                
             } else {// 没有配置singleTask
                 String err = getString(R.string.SINGLE_TASK_TIP);
                 toast(err, 5000);
