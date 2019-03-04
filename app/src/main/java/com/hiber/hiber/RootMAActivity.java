@@ -171,35 +171,37 @@ public abstract class RootMAActivity extends FragmentActivity {
             return;
         }
 
-        // 2.判断是否为自身AC
-        String currentActivityClassName = getClass().getName();
-        String targetActivityClassName = skipBean.getTargetActivityClassName();
-        if (targetActivityClassName.equalsIgnoreCase(currentActivityClassName)) {
-            // 是自身AC
-            Class targetFragClass = searchFragClassByName(skipBean.getTargetFragmentClassName());
-            int classFragIndex = searchFragIndexByClass(targetFragClass);
-            Object attach = skipBean.getAttach();
-            boolean isTargetReload = skipBean.isTargetReload();
-            if (FLAG_CURRENT.equalsIgnoreCase(FLAG_NEW_INTENT)) {
-                toFrag(getClass(), targetFragClass, attach, isTargetReload);
+        if (skipBean != null) {
+            // 2.判断是否为自身AC
+            String currentActivityClassName = getClass().getName();
+            String targetActivityClassName = skipBean.getTargetActivityClassName();
+            if (targetActivityClassName.equalsIgnoreCase(currentActivityClassName)) {
+                // 是自身AC
+                Class targetFragClass = searchFragClassByName(skipBean.getTargetFragmentClassName());
+                int classFragIndex = searchFragIndexByClass(targetFragClass);
+                Object attach = skipBean.getAttach();
+                boolean isTargetReload = skipBean.isTargetReload();
+                if (FLAG_CURRENT.equalsIgnoreCase(FLAG_NEW_INTENT)) {
+                    toFrag(getClass(), targetFragClass, attach, isTargetReload);
+                } else {
+                    initFragment(classFragIndex, attach);
+                }
             } else {
-                initFragment(classFragIndex, attach);
-            }
-        } else {
-            // 不是自身AC(推送)
-            try {
-                Activity activity = this;
-                boolean isSingleTop = false;
-                boolean isFinish = false;
-                boolean isOverridePending = false;
-                int delay = 0;
-                RootHelper.toActivityImplicit(activity, targetActivityClassName, isSingleTop, isFinish, isOverridePending, delay, skipBean);
-            } catch (Exception e) {
-                e.printStackTrace();
-                String acError = getString(R.string.ACTION_ERR);
-                String des = String.format(acError, targetActivityClassName);
-                Lgg.t(Cons.TAG).ee(des);
-                toast(des, 5000);
+                // 不是自身AC(推送)
+                try {
+                    Activity activity = this;
+                    boolean isSingleTop = false;
+                    boolean isFinish = false;
+                    boolean isOverridePending = false;
+                    int delay = 0;
+                    RootHelper.toActivityImplicit(activity, targetActivityClassName, isSingleTop, isFinish, isOverridePending, delay, skipBean);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    String acError = getString(R.string.ACTION_ERR);
+                    String des = String.format(acError, targetActivityClassName);
+                    Lgg.t(Cons.TAG).ee(des);
+                    toast(des, 5000);
+                }
             }
         }
 
