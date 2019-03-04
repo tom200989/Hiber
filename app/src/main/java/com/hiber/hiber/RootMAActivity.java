@@ -134,7 +134,7 @@ public abstract class RootMAActivity extends FragmentActivity {
                     toast(proErr, 5000);
                     Lgg.t(TAG).ee(proErr);
                 }
-                
+
             } else {// 没有配置singleTask
                 String err = getString(R.string.SINGLE_TASK_TIP);
                 toast(err, 5000);
@@ -164,6 +164,13 @@ public abstract class RootMAActivity extends FragmentActivity {
     private void handleIntentExtra(Intent intent) {
         // 1.获取序列流
         SkipBean skipBean = (SkipBean) intent.getSerializableExtra(INTENT_NAME);
+        // 1.1.判断初始化是skipbean是否为null
+        if (skipBean == null & FLAG_CURRENT.equalsIgnoreCase(FLAG_ONCREATED)) {
+            // 1.2.初始化第一个
+            initFragment(0, "");
+            return;
+        }
+
         // 2.判断是否为自身AC
         String currentActivityClassName = getClass().getName();
         String targetActivityClassName = skipBean.getTargetActivityClassName();
