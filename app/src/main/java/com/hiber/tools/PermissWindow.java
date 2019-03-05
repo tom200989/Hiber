@@ -19,8 +19,9 @@ import com.hiber.widget.PermisWidget;
 import org.greenrobot.eventbus.EventBus;
 
 /*
- * Created by qianli.ma on 2019/2/20 0020.
+ * Created by qianli.ma on 2019/2/20 0020. 由于需要用户权限, 该方案取消(留待备用)
  */
+@Deprecated 
 public class PermissWindow {
 
     // 顶层窗体

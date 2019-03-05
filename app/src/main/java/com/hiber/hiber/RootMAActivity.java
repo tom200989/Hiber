@@ -164,11 +164,22 @@ public abstract class RootMAActivity extends FragmentActivity {
     private void handleIntentExtra(Intent intent) {
         // 1.获取序列流
         SkipBean skipBean = (SkipBean) intent.getSerializableExtra(INTENT_NAME);
+
+        /*
+         * 在skipbean为null的前提下, 如果 FLAG_CURRENT == FLAG_ONNEWINTENT
+         * 则有如下两种情况: 1.首次进入APP. 2.从后台切回来时
+         * 如果时候首次进入app, skipbean为空, 此时默认初始第一个即可
+         * 如果是从后台切回来, 会执行onNewIntent, 但此时skipbean为空, 因此无需操作
+         */
+
         // 1.1.判断初始化是skipbean是否为null
-        if (skipBean == null & FLAG_CURRENT.equalsIgnoreCase(FLAG_ONCREATED)) {
-            // 1.2.初始化第一个
-            initFragment(0, "");
-            return;
+        if (skipBean == null) {
+            if (FLAG_CURRENT.equalsIgnoreCase(FLAG_ONCREATED)) {
+                // 1.2.初始化第一个
+                initFragment(0, "");
+                return;
+            }
+            // 1.2.FLAG_CURRENT.equalsIgnoreCase(FLAG_ONNEWINTENT) --> 无需操作
         }
 
         if (skipBean != null) {

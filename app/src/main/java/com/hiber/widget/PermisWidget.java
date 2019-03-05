@@ -80,6 +80,8 @@ public class PermisWidget extends PercentRelativeLayout {
         });
     }
 
+    /* -------------------------------------------- public -------------------------------------------- */
+    
     /**
      * 设置视图
      *

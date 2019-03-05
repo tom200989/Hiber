@@ -18,9 +18,11 @@ import com.hiber.bean.PermissBean;
 import com.hiber.bean.SkipBean;
 import com.hiber.bean.StringBean;
 import com.hiber.cons.Cons;
+import com.hiber.impl.PermissedListener;
 import com.hiber.tools.Lgg;
 import com.hiber.tools.PermissWindow;
 import com.hiber.tools.backhandler.FragmentBackHandler;
+import com.hiber.ui.PermissFragment;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -71,7 +73,7 @@ public abstract class RootFrag extends Fragment implements FragmentBackHandler {
     public PermissedListener permissedListener;// 权限申请监听器
     private View view;// 权限自定义制图
     private StringBean stringBean;// 权限默认字符内容
-    private PermissWindow permissWindow;// 权限视窗
+    private PermissWindow permissWindow;// 权限视窗(该方案被否定, 因涉及到顶级视图权限申请问题)
 
     @Override
     public void onAttach(Context context) {
@@ -210,18 +212,29 @@ public abstract class RootFrag extends Fragment implements FragmentBackHandler {
     private void showWindow(List<String> denyPermissions) {
         // 接受并处理外部重写的自定义contentView
         preparePermissView();
-        // 弹出自定义权限框
-        permissWindow = new PermissWindow();
-        permissWindow.setOnClickCancelListener(() -> {
-            // 接口回调给开发者
-            permissedListener.permissionResult(false, denyPermissions.toArray(new String[denyPermissions.size()]));
-            Lgg.t(Cons.TAG2).ii("Rootfrag: click cancel finish");
-        });
-        permissWindow.setOnClickOkListener(() -> {
-            // 点击OK的行为不提供给开发人员
-            Lgg.t(Cons.TAG2).ii("Rootfrag: click OK finish");
-        });
-        permissWindow.setVisibles(activity, view, stringBean);
+
+        // TOAT: 备用方案(缺点: 是需要用户同意顶层window显示的权限) // 弹出自定义权限框
+        // permissWindow = new PermissWindow();
+        // permissWindow.setOnClickCancelListener(() -> {
+        //     // 接口回调给开发者
+        //     permissedListener.permissionResult(false, denyPermissions.toArray(new String[denyPermissions.size()]));
+        //     Lgg.t(Cons.TAG2).ii("Rootfrag: click cancel finish");
+        // });
+        // permissWindow.setOnClickOkListener(() -> {
+        //     // 点击OK的行为不提供给开发人员
+        //     Lgg.t(Cons.TAG2).ii("Rootfrag: click OK finish");
+        // });
+        // permissWindow.setVisibles(activity, view, stringBean);
+
+        // TODO: 2019/3/4 0004 封装内部接口对象 
+        PermissInnerBean permissInnerBean = new PermissInnerBean();
+        permissInnerBean.setView(view);
+        permissInnerBean.setStringBean(stringBean);
+        permissInnerBean.setPermissedListener(permissedListener);
+        permissInnerBean.setDenyPermissons(denyPermissions.toArray(new String[denyPermissions.size()]));
+        permissInnerBean.setCurrentFrag(getClass());
+        // 启动权限视窗fragment
+        toFrag(getClass(), PermissFragment.class, permissInnerBean, true);
     }
 
     /**
@@ -646,13 +659,6 @@ public abstract class RootFrag extends Fragment implements FragmentBackHandler {
     }
 
     /* -------------------------------------------- impl -------------------------------------------- */
-
-    /**
-     * 权限监听接口
-     */
-    public interface PermissedListener {
-        void permissionResult(boolean isPassAllPermission, String[] denyPermissions);
-    }
 
     /**
      * 设置权限监听接口
