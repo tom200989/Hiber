@@ -3,15 +3,24 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="@android:color/transparent">
+    android:layout_height="match_parent">
+
+    <!-- 备用背景 -->
+    <!-- 将上一个frag的图层copy到此处展示, 因为框架使用了show\hide机制 -->
+    <!-- 因此权限frag即便使用了透明图层也无法展示「上一个frag的半透明效果」 -->
+    <!-- 因此权限frag收到上一个frag的layoutid后, 生成view, 将view加载到此处容器」 -->
+    <!-- 注意, 该view只作为展示, 并不具备上一个frag的功能, 如点击等, 均不实现」 -->
+    <RelativeLayout
+        android:id="@+id/rl_permissed"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
 
     <!-- 背景 -->
     <ImageView
         android:id="@+id/iv_bg"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:alpha="0.6"
+        android:alpha="0.75"
         android:background="#cccccc" />
 
     <!-- 内容区 -->

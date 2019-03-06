@@ -1,6 +1,7 @@
 package com.hiber.widget;
 
 import android.content.Context;
+import android.support.annotation.LayoutRes;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.util.AttributeSet;
@@ -22,6 +23,7 @@ public class PermisWidget extends PercentRelativeLayout {
 
     private View inflate;
     private Context context;
+    private RelativeLayout rlPermissed;// 展示上一个frag的图层(不具有实际功能, 仅是为了实现半透明效果而已)
     private ImageView ivBg;// 灰色背景
     private RelativeLayout rlContentSelf;// 自定义区域
     private RelativeLayout rlContentDefault;// 默认区域
@@ -40,6 +42,7 @@ public class PermisWidget extends PercentRelativeLayout {
 
     public PermisWidget(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
+
         this.context = context;
         inflate = inflate(context, R.layout.widget_permission, this);
         initView();
@@ -50,6 +53,7 @@ public class PermisWidget extends PercentRelativeLayout {
      * 初始化视图
      */
     private void initView() {
+        rlPermissed = inflate.findViewById(R.id.rl_permissed);
         ivBg = inflate.findViewById(R.id.iv_bg);
         rlContentSelf = inflate.findViewById(R.id.rl_content_self);
         rlContentDefault = inflate.findViewById(R.id.rl_content_default);
@@ -81,24 +85,35 @@ public class PermisWidget extends PercentRelativeLayout {
     }
 
     /* -------------------------------------------- public -------------------------------------------- */
-    
+
+    /**
+     * 展示上一个frag的图层(不具有实际功能, 仅是为了实现半透明效果而已)
+     *
+     * @param layoutId 上一个frag图层的布局layoutId
+     */
+    public void setLastFragView(@LayoutRes int layoutId) {
+        View inflate = View.inflate(context, layoutId, null);
+        RelativeLayout.LayoutParams lp = new RelativeLayout.LayoutParams(-1, -1);
+        rlPermissed.addView(inflate, lp);
+    }
+
     /**
      * 设置视图
      *
      * @param view       自定义视图(允许为null)
      * @param stringBean 默认视图数据(允许为null, 为Null则使用英文)
      */
-    public void setView(@Nullable View view, @Nullable StringBean stringBean) {
-        Lgg.t(Cons.TAG2).ii("PermissWidget: setView() start");
+    public void setPermissView(@Nullable View view, @Nullable StringBean stringBean) {
+        Lgg.t(Cons.TAG2).ii("PermissWidget: setPermissView() start");
         rlContentSelf.setVisibility(view == null ? GONE : VISIBLE);
         rlContentDefault.setVisibility(rlContentSelf.getVisibility() == GONE ? VISIBLE : GONE);
         if (view != null) {
-            Lgg.t(Cons.TAG2).ii("PermissWidget: setView() view == null");
+            Lgg.t(Cons.TAG2).ii("PermissWidget: setPermissView() view == null");
             rlContentSelf.addView(view);
         } else {
-            Lgg.t(Cons.TAG2).ii("PermissWidget: setView() view != null");
+            Lgg.t(Cons.TAG2).ii("PermissWidget: setPermissView() view != null");
             if (stringBean != null) {
-                Lgg.t(Cons.TAG2).ii("PermissWidget: setView() stringBean != null");
+                Lgg.t(Cons.TAG2).ii("PermissWidget: setPermissView() stringBean != null");
                 // 设置内容
                 tvTitle.setText(TextUtils.isEmpty(stringBean.getTitle()) ? context.getString(R.string.wd_title) : stringBean.getTitle());
                 tvContent.setText(TextUtils.isEmpty(stringBean.getContent()) ? context.getString(R.string.wd_content) : stringBean.getContent());
@@ -119,14 +134,14 @@ public class PermisWidget extends PercentRelativeLayout {
                 }
 
             } else {
-                Lgg.t(Cons.TAG2).ii("PermissWidget: setView() stringBean == null");
+                Lgg.t(Cons.TAG2).ii("PermissWidget: setPermissView() stringBean == null");
                 tvTitle.setText(context.getString(R.string.wd_title));
                 tvContent.setText(context.getString(R.string.wd_content));
                 tvCancel.setText(context.getString(R.string.wd_cancel));
                 tvOk.setText(context.getString(R.string.wd_ok));
             }
         }
-        Lgg.t(Cons.TAG2).ii("PermissWidget: setView() end");
+        Lgg.t(Cons.TAG2).ii("PermissWidget: setPermissView() end");
     }
 
     /* -------------------------------------------- impl -------------------------------------------- */

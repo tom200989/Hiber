@@ -1,5 +1,6 @@
 package com.hiber.hiber;
 
+import android.support.annotation.LayoutRes;
 import android.view.View;
 
 import com.hiber.bean.StringBean;
@@ -23,8 +24,8 @@ public class PermissInnerBean {
     /**
      * 权限自定义制图
      */
-    private View view;
-    
+    private View permissView;
+
     /**
      * 权限默认字符内容
      */
@@ -35,7 +36,19 @@ public class PermissInnerBean {
      */
     private Class currentFrag;
 
+    private @LayoutRes
+    int layoutId;
+
+
     public PermissInnerBean() {
+    }
+
+    public int getLayoutId() {
+        return layoutId;
+    }
+
+    public void setLayoutId(int layoutId) {
+        this.layoutId = layoutId;
     }
 
     public String[] getDenyPermissons() {
@@ -54,12 +67,12 @@ public class PermissInnerBean {
         this.permissedListener = permissedListener;
     }
 
-    public View getView() {
-        return view;
+    public View getPermissView() {
+        return permissView;
     }
 
-    public void setView(View view) {
-        this.view = view;
+    public void setPermissView(View permissView) {
+        this.permissView = permissView;
     }
 
     public StringBean getStringBean() {

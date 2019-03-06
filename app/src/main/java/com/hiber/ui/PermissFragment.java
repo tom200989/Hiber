@@ -8,15 +8,12 @@ import android.view.View;
 
 import com.hiber.bean.StringBean;
 import com.hiber.cons.Cons;
-import com.hiber.hiber.FragBean;
 import com.hiber.hiber.PermissInnerBean;
 import com.hiber.hiber.R;
 import com.hiber.hiber.RootFrag;
 import com.hiber.impl.PermissedListener;
 import com.hiber.tools.Lgg;
 import com.hiber.widget.PermisWidget;
-
-import org.greenrobot.eventbus.EventBus;
 
 /*
  * Created by qianli.ma on 2019/3/4 0004.
@@ -31,38 +28,35 @@ public class PermissFragment extends RootFrag {
     }
 
     @Override
-    public void initViewFinish() {
-        super.initViewFinish();
-        permisWidget = activity.findViewById(R.id.wd_permiss);
-    }
-
-    @Override
     public void onNexts(Object yourBean, View view, String whichFragmentStart) {
+        // 初始化视图
+        permisWidget = view.findViewById(R.id.wd_permiss);
+        // 获取数据
         if (yourBean instanceof PermissInnerBean) {
-            
             // 接收数据
             PermissInnerBean permissInnerBean = (PermissInnerBean) yourBean;
             String[] denyPermissons = permissInnerBean.getDenyPermissons();
             PermissedListener permissedListener = permissInnerBean.getPermissedListener();
             StringBean stringBean = permissInnerBean.getStringBean();
-            View permissView = permissInnerBean.getView();
+            View permissView = permissInnerBean.getPermissView();
             Class currentFrag = permissInnerBean.getCurrentFrag();
-            
+            int layoutId = permissInnerBean.getLayoutId();
+
+            // 设置上一个frag的图层以实现半透明效果
+            permisWidget.setLastFragView(layoutId);
+
             // 初始化视图
-            permisWidget.setView(permissView, stringBean);
-            
+            permisWidget.setPermissView(permissView, stringBean);
+
             // 设置Cancel点击事件
             permisWidget.setOnClickCancelListener(() -> {
-                // 10.1.移除stick事件
-                EventBus.getDefault().removeStickyEvent(FragBean.class);
-                Lgg.t(Cons.TAG2).ii("PermissFragment: Eventbus unRegister");
                 // 10.2.关闭窗口
                 toFrag(getClass(), currentFrag, null, false);
                 // 10.3.接口回调
                 permissedListener.permissionResult(false, denyPermissons);
                 Lgg.t(Cons.TAG2).ii("PermissFragment: click cancel callback outside");
             });
-            
+
             // 设置OK点击事件
             permisWidget.setOnClickOkListener(() -> {
                 // 10.1.关闭窗口(此处一定要先跳转, 否则会被setting页面覆盖)
@@ -84,7 +78,7 @@ public class PermissFragment extends RootFrag {
         intent.setData(uri);
         intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
         context.startActivity(intent);
-        Lgg.t(Cons.TAG2).ii("PermissWindow: to system setting ui");
+        Lgg.t(Cons.TAG2).ii("PermissFragment: to system setting ui");
     }
 
     @Override

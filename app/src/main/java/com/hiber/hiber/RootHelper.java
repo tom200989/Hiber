@@ -69,6 +69,7 @@ public class RootHelper {
      * @param overridepedding F:消除转场闪烁 T:保留转场闪烁
      * @param delay           延迟
      */
+    @Deprecated
     private static void toActivity(final Activity activity,// 上下文
                                   final Class<?> clazz,// 目标
                                   final boolean isSingleTop,// 独立任务栈

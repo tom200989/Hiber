@@ -110,6 +110,7 @@ public class FraHelpers {
         fragBean.setCurrentFragmentClass(clazz);
         fragBean.setTargetFragmentClass(clazz);
         fragBean.setAttach(attach);
+        EventBus.getDefault().removeStickyEvent(FragBean.class);
         EventBus.getDefault().postSticky(fragBean);
     }
 

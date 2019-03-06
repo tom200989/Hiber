@@ -1,6 +1,5 @@
 package com.hiber.hiber;
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
@@ -20,7 +19,6 @@ import com.hiber.bean.StringBean;
 import com.hiber.cons.Cons;
 import com.hiber.impl.PermissedListener;
 import com.hiber.tools.Lgg;
-import com.hiber.tools.PermissWindow;
 import com.hiber.tools.backhandler.FragmentBackHandler;
 import com.hiber.ui.PermissFragment;
 
@@ -59,7 +57,6 @@ public abstract class RootFrag extends Fragment implements FragmentBackHandler {
     public Unbinder unbinder;
     private View inflateView;
     private int layoutId;
-    private static Object attachs;
     private static String whichFragmentStart;
 
     // 权限相关
@@ -71,9 +68,8 @@ public abstract class RootFrag extends Fragment implements FragmentBackHandler {
     public static final int ACTION_PASS = 1;// 同意情况
     private HashMap<HashMap<String, Integer>, Integer> permissedActionMap;// < < 权限 , 权限状态 > , 用户行为 >
     public PermissedListener permissedListener;// 权限申请监听器
-    private View view;// 权限自定义制图
+    private View permissView;// 权限自定义制图
     private StringBean stringBean;// 权限默认字符内容
-    private PermissWindow permissWindow;// 权限视窗(该方案被否定, 因涉及到顶级视图权限申请问题)
 
     @Override
     public void onAttach(Context context) {
@@ -138,15 +134,8 @@ public abstract class RootFrag extends Fragment implements FragmentBackHandler {
 
             // 1.2.初始化权限全部通过 || 点击申请即使不通过 --> 也不影响数据初始化
             if (!EventBus.getDefault().isRegistered(this)) {
-                // 该部分是判断从后台回到前台, isReloadData == true时, 避免stick包丢失而导致业务逻辑无法加载
-                FragBean isStickExist = EventBus.getDefault().getStickyEvent(FragBean.class);
-                if (isStickExist != null) {
-                    // stick包存在--> 首次加载--> 执行注册
-                    EventBus.getDefault().register(this);
-                } else {
-                    // stick包不存在, 因isReloadData为true而导致的stick包丢失--> 直接执行业务逻辑 
-                    onNexts(attachs, inflateView, whichFragmentStart);
-                }
+                // stick包存在--> 首次加载--> 执行注册
+                EventBus.getDefault().register(this);
             }
         }
 
@@ -190,11 +179,8 @@ public abstract class RootFrag extends Fragment implements FragmentBackHandler {
             }
             // 把拒绝的权限接口对外提供
             if (permissedListener != null) {
-                // TOAT: 2019/2/19 0019  P1 
-                // 权限拒绝后移除stick是为了防止用户回退到上一个界面时候响应上一次的事件
-                EventBus.getDefault().removeStickyEvent(FragBean.class);
                 // 显示权限视窗
-                showWindow(denyPermissions);
+                showPermissFrag(denyPermissions);
             }
 
             // 点击申请情况--> 将点击权限设置为空
@@ -205,11 +191,11 @@ public abstract class RootFrag extends Fragment implements FragmentBackHandler {
     }
 
     /**
-     * 显示权限视窗
+     * 显示权限视窗(fragment)
      *
      * @param denyPermissions 权限组
      */
-    private void showWindow(List<String> denyPermissions) {
+    private void showPermissFrag(List<String> denyPermissions) {
         // 接受并处理外部重写的自定义contentView
         preparePermissView();
 
@@ -224,17 +210,18 @@ public abstract class RootFrag extends Fragment implements FragmentBackHandler {
         //     // 点击OK的行为不提供给开发人员
         //     Lgg.t(Cons.TAG2).ii("Rootfrag: click OK finish");
         // });
-        // permissWindow.setVisibles(activity, view, stringBean);
-
-        // TODO: 2019/3/4 0004 封装内部接口对象 
+        // permissWindow.setVisibles(activity, permissView, stringBean);
+        
+        // 采用fragment方案代替以上方案 20190306
         PermissInnerBean permissInnerBean = new PermissInnerBean();
-        permissInnerBean.setView(view);
+        permissInnerBean.setLayoutId(layoutId);
+        permissInnerBean.setPermissView(permissView);
         permissInnerBean.setStringBean(stringBean);
         permissInnerBean.setPermissedListener(permissedListener);
         permissInnerBean.setDenyPermissons(denyPermissions.toArray(new String[denyPermissions.size()]));
         permissInnerBean.setCurrentFrag(getClass());
         // 启动权限视窗fragment
-        toFrag(getClass(), PermissFragment.class, permissInnerBean, true);
+        toFrag(getClass(), PermissFragment.class, permissInnerBean, true, 500);
     }
 
     /**
@@ -244,7 +231,7 @@ public abstract class RootFrag extends Fragment implements FragmentBackHandler {
         Lgg.t(Cons.TAG2).ii("Rootfrag: preparePermissView()");
         PermissBean permissBean = overWritePermissedView();
         if (permissBean != null) {
-            view = permissBean.getView();
+            permissView = permissBean.getView();
             stringBean = permissBean.getStringBean();
         }
     }
@@ -343,7 +330,7 @@ public abstract class RootFrag extends Fragment implements FragmentBackHandler {
          *
          * */
         Lgg.t(Cons.TAG).vv("Method--> " + getClass().getSimpleName() + ":getData()");
-        attachs = bean.getAttach();
+        Object attachs = bean.getAttach();
         whichFragmentStart = bean.getCurrentFragmentClass().getSimpleName();
         String targetFragment = bean.getTargetFragmentClass().getSimpleName();
         Lgg.t(Cons.TAG).vv("whichFragmentStart: " + whichFragmentStart);
@@ -352,8 +339,6 @@ public abstract class RootFrag extends Fragment implements FragmentBackHandler {
         if (getClass().getSimpleName().equalsIgnoreCase(targetFragment)) {
             Lgg.t(Cons.TAG).vv("whichFragmentStart <equal to> targetFragment");
             onNexts(attachs, inflateView, whichFragmentStart);// 抽象
-            // TOAT: 2019/2/19 0019  P2 执行完业务逻辑后把stick包移除, 避免stick包越来越多
-            EventBus.getDefault().removeStickyEvent(bean);
         }
     }
 
@@ -365,21 +350,10 @@ public abstract class RootFrag extends Fragment implements FragmentBackHandler {
             Lgg.t(Cons.TAG).vv("Method--> " + getClass().getSimpleName() + ":eventbus unregister");
             EventBus.getDefault().unregister(this);
         }
-        if (permissWindow != null) {
-            permissWindow.setGone();// 切换到后台时移除权限视窗
-        }
     }
 
     @Override
     public boolean onBackPressed() {
-        // 权限框弹出情况
-        if (permissWindow != null) {// 如果权限通过--> 则不会有permissWindow
-            if (permissWindow.isPermissWidgetVisible()) {
-                Lgg.t(Cons.TAG2).ii("Rootfrag permiss window in front");
-                return true;
-            }
-        }
-
         // 其他重写情况
         boolean isDispathcherBackPressed = onBackPresss();
         Lgg.t(Cons.TAG).vv("Method--> " + getClass().getSimpleName() + ":onBackPressed()--> isDispathcherBackPressed == " + isDispathcherBackPressed);
@@ -482,7 +456,6 @@ public abstract class RootFrag extends Fragment implements FragmentBackHandler {
             RootMAActivity activity = (RootMAActivity) getActivity();
             if (activity != null) {
                 whichFragmentStart = current.getSimpleName();
-                attachs = attach;
                 activity.toFrag(current, target, attach, isTargetReload);
             } else {
                 Lgg.t(Cons.TAG).ee("RootHiber--> toFrag() error: RootMAActivity is null");
@@ -510,7 +483,6 @@ public abstract class RootFrag extends Fragment implements FragmentBackHandler {
                     try {
                         Thread.sleep(delayMilis);
                         whichFragmentStart = current.getSimpleName();
-                        attachs = attach;
                         activity.runOnUiThread(() -> activity.toFrag(current, target, attach, isTargetReload));
                     } catch (InterruptedException e) {
                         e.printStackTrace();
@@ -536,7 +508,11 @@ public abstract class RootFrag extends Fragment implements FragmentBackHandler {
      * @param attach         附件
      * @param isTargetReload 是否重载目标fragment
      */
-    public void toFragActivity(@NonNull Class current, @NonNull Activity targetAC, @NonNull Class target, Object attach, boolean isTargetReload) {
+    public void toFragActivity(Class current, Class targetAC, Class target, Object attach, boolean isTargetReload) {
+        if (current == null | targetAC == null | target == null) {
+            toast(activity.getString(R.string.NULL_TIP), 5000);
+            return;
+        }
         SkipBean skipbean = getSkipbean(current, targetAC, target, attach, isTargetReload, false);
         RootHelper.toActivityImplicit(activity, skipbean.getTargetActivityClassName(), false, false, false, 0, skipbean);
     }
@@ -552,7 +528,11 @@ public abstract class RootFrag extends Fragment implements FragmentBackHandler {
      * @param isFinish       是否结束当前AC
      * @param delay          延迟毫秒数
      */
-    public void toFragActivity(@NonNull Class current, @NonNull Activity targetAC, @NonNull Class target, Object attach, boolean isTargetReload, boolean isFinish, int delay) {
+    public void toFragActivity(Class current, Class targetAC, Class target, Object attach, boolean isTargetReload, boolean isFinish, int delay) {
+        if (current == null | targetAC == null | target == null) {
+            toast(activity.getString(R.string.NULL_TIP), 5000);
+            return;
+        }
         SkipBean skipbean = getSkipbean(current, targetAC, target, attach, isTargetReload, isFinish);
         RootHelper.toActivityImplicit(activity, skipbean.getTargetActivityClassName(), false, isFinish, false, delay, skipbean);
     }
@@ -566,7 +546,11 @@ public abstract class RootFrag extends Fragment implements FragmentBackHandler {
      * @param attach         附件
      * @param isTargetReload 是否重载目标fragment
      */
-    public void toFragModule(@NonNull Class current, @NonNull String activityClass, @NonNull String target, Object attach, boolean isTargetReload) {
+    public void toFragModule(Class current, String activityClass, String target, Object attach, boolean isTargetReload) {
+        if (current == null | activityClass == null | target == null) {
+            toast(activity.getString(R.string.NULL_TIP), 5000);
+            return;
+        }
         SkipBean skipbean = new SkipBean();
         skipbean.setCurrentFragmentClassName(current.getName());
         skipbean.setTargetActivityClassName(activityClass);
@@ -588,7 +572,11 @@ public abstract class RootFrag extends Fragment implements FragmentBackHandler {
      * @param isFinish       是否结束当前AC
      * @param delay          延迟毫秒数
      */
-    public void toFragModule(@NonNull Class current, @NonNull String activityClass, @NonNull String target, Object attach, boolean isTargetReload, boolean isFinish, int delay) {
+    public void toFragModule(Class current, String activityClass, String target, Object attach, boolean isTargetReload, boolean isFinish, int delay) {
+        if (current == null | activityClass == null | target == null) {
+            toast(activity.getString(R.string.NULL_TIP), 5000);
+            return;
+        }
         SkipBean skipbean = new SkipBean();
         skipbean.setCurrentFragmentClassName(current.getName());
         skipbean.setTargetActivityClassName(activityClass);
@@ -682,7 +670,7 @@ public abstract class RootFrag extends Fragment implements FragmentBackHandler {
      * @param isFinish       是否结束当前Activity
      * @return skipbean
      */
-    private SkipBean getSkipbean(Class current, Activity activityClass, Class target, Object attach, boolean isTargetReload, boolean isFinish) {
+    private SkipBean getSkipbean(Class current, Class activityClass, Class target, Object attach, boolean isTargetReload, boolean isFinish) {
         SkipBean skipBean = new SkipBean();
 
         boolean isCurrentFrag = Fragment.class.isAssignableFrom(current);
@@ -705,7 +693,7 @@ public abstract class RootFrag extends Fragment implements FragmentBackHandler {
 
         }
 
-        skipBean.setTargetActivityClassName(activityClass.getClass().getName());
+        skipBean.setTargetActivityClassName(activityClass.getName());
         skipBean.setAttach(attach);
         skipBean.setTargetReload(isTargetReload);
         skipBean.setCurrentACFinish(isFinish);

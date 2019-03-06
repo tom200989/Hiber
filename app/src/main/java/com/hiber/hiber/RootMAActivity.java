@@ -23,10 +23,14 @@ import com.hiber.tools.Lgg;
 import com.hiber.tools.backhandler.BackHandlerHelper;
 import com.hiber.tools.barcompat.StatusBarCompat;
 import com.hiber.ui.DefaultFragment;
+import com.hiber.ui.PermissFragment;
 
 import org.greenrobot.eventbus.EventBus;
 
+import java.io.Serializable;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
@@ -104,7 +108,7 @@ public abstract class RootMAActivity extends FragmentActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-
+        super.onCreate(savedInstanceState);
         // 0.检测action与category是否符合规范
         boolean isActionCategoryMatch = checkActionCategory();
         if (isActionCategoryMatch) {// 0.1.符合条件则正常执行
@@ -121,7 +125,6 @@ public abstract class RootMAActivity extends FragmentActivity {
                     if (isFullScreen) {
                         requestWindowFeature(Window.FEATURE_NO_TITLE);
                     }
-                    super.onCreate(savedInstanceState);
                     // 4.填充视图
                     setContentView(layoutId);
                     // 5.设置状态栏颜色
@@ -162,27 +165,31 @@ public abstract class RootMAActivity extends FragmentActivity {
      * @param intent 意图
      */
     private void handleIntentExtra(Intent intent) {
-        // 1.获取序列流
-        SkipBean skipBean = (SkipBean) intent.getSerializableExtra(INTENT_NAME);
 
-        /*
-         * 在skipbean为null的前提下, 如果 FLAG_CURRENT == FLAG_ONNEWINTENT
-         * 则有如下两种情况: 1.首次进入APP. 2.从后台切回来时
-         * 如果时候首次进入app, skipbean为空, 此时默认初始第一个即可
-         * 如果是从后台切回来, 会执行onNewIntent, 但此时skipbean为空, 因此无需操作
-         */
-
-        // 1.1.判断初始化是skipbean是否为null
-        if (skipBean == null) {
+        // 0.获取到序列
+        Serializable extra = intent.getSerializableExtra(INTENT_NAME);
+        // 0.1.序列为空(启动APP初始化时)
+        if (extra == null) {
+            /*
+             * 在skipbean为null的前提下, 如果 FLAG_CURRENT == FLAG_ONNEWINTENT
+             * 则有如下两种情况: 1.首次进入APP. 2.从后台切回来时
+             * 如果时候首次进入app, skipbean为空, 此时默认初始第一个即可
+             * 如果是从后台切回来, 会执行onNewIntent, 但此时skipbean为空, 因此无需操作
+             */
             if (FLAG_CURRENT.equalsIgnoreCase(FLAG_ONCREATED)) {
-                // 1.2.初始化第一个
+                // 0.2.初始化第一个
                 initFragment(0, "");
+            }
+        } else {
+            // 0.2.判断开发是否传递错误参数
+            boolean isSkipbeanType = extra instanceof SkipBean;
+            if (!isSkipbeanType) {
+                toast(getString(R.string.SKIPBEAN_TIP), 5000);
                 return;
             }
-            // 1.2.FLAG_CURRENT.equalsIgnoreCase(FLAG_ONNEWINTENT) --> 无需操作
-        }
 
-        if (skipBean != null) {
+            // 1.正常获取到skipbean
+            SkipBean skipBean = (SkipBean) extra;
             // 2.判断是否为自身AC
             String currentActivityClassName = getClass().getName();
             String targetActivityClassName = skipBean.getTargetActivityClassName();
@@ -199,25 +206,17 @@ public abstract class RootMAActivity extends FragmentActivity {
                 }
             } else {
                 // 不是自身AC(推送)
-                try {
-                    Activity activity = this;
-                    boolean isSingleTop = false;
-                    boolean isFinish = false;
-                    boolean isOverridePending = false;
-                    int delay = 0;
-                    RootHelper.toActivityImplicit(activity, targetActivityClassName, isSingleTop, isFinish, isOverridePending, delay, skipBean);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    String acError = getString(R.string.ACTION_ERR);
-                    String des = String.format(acError, targetActivityClassName);
-                    Lgg.t(Cons.TAG).ee(des);
-                    toast(des, 5000);
-                }
+                Activity activity = this;
+                boolean isSingleTop = false;
+                boolean isFinish = false;
+                boolean isOverridePending = false;
+                int delay = 0;
+                RootHelper.toActivityImplicit(activity, targetActivityClassName, isSingleTop, isFinish, isOverridePending, delay, skipBean);
             }
-        }
 
-        // 恢复标记位
-        FLAG_CURRENT = FLAG_ONCREATED;
+            // 恢复标记位
+            FLAG_CURRENT = FLAG_ONCREATED;
+        }
     }
 
     /**
@@ -339,8 +338,25 @@ public abstract class RootMAActivity extends FragmentActivity {
         projectDirName = TextUtils.isEmpty(rootProperty.getProjectDirName()) ? projectDirName : rootProperty.getProjectDirName();
         containId = rootProperty.getContainId() <= 0 ? containId : rootProperty.getContainId();
         fragmentClazzs = rootProperty.getFragmentClazzs() == null || rootProperty.getFragmentClazzs().length <= 0 ? fragmentClazzs : rootProperty.getFragmentClazzs();
+        // 对fragmentClazzs做二次处理--> 将权限fragment加载进集合中
+        fragmentClazzs = putInnerFragmentIn();
         // 将fragment转换成map形式
         saveClassMap(fragmentClazzs);
+    }
+
+    /**
+     * 把Permissfragment添加进集合
+     *
+     * @return 新集合
+     */
+    private Class[] putInnerFragmentIn() {
+        List<Class> tempList = new ArrayList<>(Arrays.asList(fragmentClazzs));
+        tempList.add(PermissFragment.class);
+        Class[] newFrags = new Class[tempList.size()];
+        for (int i = 0; i < tempList.size(); i++) {
+            newFrags[i] = tempList.get(i);
+        }
+        return newFrags;
     }
 
     @Override
@@ -466,6 +482,7 @@ public abstract class RootMAActivity extends FragmentActivity {
         // 1.先跳转
         fraHelpers.transfer(fragBean.getTargetFragmentClass(), isTargetReload);
         // 2.再传输(否则会出现nullPointException)
+        EventBus.getDefault().removeStickyEvent(FragBean.class);
         EventBus.getDefault().postSticky(fragBean);
     }
 
@@ -494,6 +511,34 @@ public abstract class RootMAActivity extends FragmentActivity {
      */
     public void toast(int stringId, int duration) {
         RootHelper.toast(this, getString(stringId), duration);
+    }
+
+    /**
+     * 创建传输对象的KEY
+     *
+     * @return 传输对象的KEY
+     */
+    public String getPendingIntentKey() {
+        return RootMAActivity.INTENT_NAME;
+    }
+
+    /**
+     * 创建传输对象
+     *
+     * @param targetAC   目标AC
+     * @param targetFrag 目标fragment
+     * @param attach     附件
+     * @return skipbean
+     */
+    public SkipBean getPendingIntentValue(String targetAC, String targetFrag, Object attach) {
+        SkipBean skipBean = new SkipBean();
+        skipBean.setCurrentFragmentClassName("");
+        skipBean.setTargetActivityClassName(targetAC);
+        skipBean.setTargetFragmentClassName(targetFrag);
+        skipBean.setAttach(attach);
+        skipBean.setTargetReload(true);
+        skipBean.setCurrentACFinish(false);
+        return skipBean;
     }
 
     /* -------------------------------------------- abstract -------------------------------------------- */
