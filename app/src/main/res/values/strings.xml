@@ -4,7 +4,7 @@
     <string name="wd_content">The current function is not available, and related permissions need to be opened synchronously</string>
     <string name="wd_cancel">Cancel</string>
     <string name="wd_ok">OK</string>
-
+    <string name="ok_i_got_it">OK, I got it</string>
     <string name="ACTION_ERR">
         跳转目标Activity: [$1%s]失败,原因:
         \n1.目标activity在manifest里没有配置Intent-filter:action路径.
@@ -22,4 +22,5 @@
     <string name="SINGLE_TASK_TIP">当前activity没有设置为singleTask模式\n请务必设置</string>
     <string name="NULL_TIP">使用 [toFragActivity] 方法必须要求\ncurrent,targetAC, target不能为null</string>
     <string name="SKIPBEAN_TIP">请确保传输的数据格式为Skipbean对象\n可以使用RootMAActivity:createSkipbean()生成传输对象</string>
+    
 </resources>

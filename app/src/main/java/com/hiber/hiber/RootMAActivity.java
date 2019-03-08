@@ -10,6 +10,7 @@ import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.annotation.StringRes;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.text.TextUtils;
@@ -479,10 +480,10 @@ public abstract class RootMAActivity extends FragmentActivity {
     public void toFrag(Class classWhichFragmentStart, Class targetFragmentClass, Object attach, boolean isTargetReload) {
         // 0.转换并封装传输对象
         FragBean fragBean = transferFragbean(classWhichFragmentStart, targetFragmentClass, attach);
-        // 1.先跳转
-        fraHelpers.transfer(fragBean.getTargetFragmentClass(), isTargetReload);
-        // 2.再传输(否则会出现nullPointException)
+        // 1.再传输(否则会出现nullPointException)
         EventBus.getDefault().removeStickyEvent(FragBean.class);
+        // 2.先跳转
+        fraHelpers.transfer(fragBean.getTargetFragmentClass(), isTargetReload);
         EventBus.getDefault().postSticky(fragBean);
     }
 
@@ -509,7 +510,7 @@ public abstract class RootMAActivity extends FragmentActivity {
      * @param stringId 字符资源ID
      * @param duration 时长
      */
-    public void toast(int stringId, int duration) {
+    public void toast(@StringRes int stringId, int duration) {
         RootHelper.toast(this, getString(stringId), duration);
     }
 
@@ -518,7 +519,7 @@ public abstract class RootMAActivity extends FragmentActivity {
      *
      * @return 传输对象的KEY
      */
-    public String getPendingIntentKey() {
+    public static String getPendingIntentKey() {
         return RootMAActivity.INTENT_NAME;
     }
 
@@ -530,7 +531,7 @@ public abstract class RootMAActivity extends FragmentActivity {
      * @param attach     附件
      * @return skipbean
      */
-    public SkipBean getPendingIntentValue(String targetAC, String targetFrag, Object attach) {
+    public static SkipBean getPendingIntentValue(String targetAC, String targetFrag, Object attach) {
         SkipBean skipBean = new SkipBean();
         skipBean.setCurrentFragmentClassName("");
         skipBean.setTargetActivityClassName(targetAC);

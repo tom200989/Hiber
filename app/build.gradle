@@ -1,5 +1,5 @@
-apply plugin: 'com.android.library'
-//apply plugin: 'com.android.application'
+//apply plugin: 'com.android.library'
+apply plugin: 'com.android.application'
 
 android {
     compileSdkVersion 28
@@ -47,8 +47,9 @@ dependencies {
     //noinspection GradleDependency
     api 'com.jakewharton:butterknife:9.0.0-rc2'
     //noinspection GradleDependency
+    implementation 'com.android.support.constraint:constraint-layout:1.1.3'
     annotationProcessor 'com.jakewharton:butterknife-compiler:9.0.0-rc2'
-    
+
     // multiDex分包处理
     //noinspection GradleDependency
     api 'com.android.support:multidex:1.0.1'

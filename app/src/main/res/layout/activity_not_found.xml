@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.hiber.tools.layout.PercentRelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@android:color/transparent"
+    tools:context="com.hiber.ui.ActivityNotFound">
+
+    <ImageView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:alpha="0.5"
+        android:background="@android:color/darker_gray" />
+
+    <com.hiber.tools.layout.PercentRelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:background="@drawable/bg_wd_permis"
+        android:orientation="vertical"
+        app:layout_heightPercent="40%h"
+        app:layout_marginBottomPercent="5%h"
+        app:layout_marginTopPercent="5%h"
+        app:layout_widthPercent="80%w">
+
+        <com.hiber.tools.layout.PercentRelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:layout_heightPercent="80%h">
+
+            <ScrollView
+                android:id="@+id/scv_action"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="10dp"
+                android:fadeScrollbars="false"
+                android:fadingEdge="none"
+                android:overScrollMode="never"
+                android:scrollbars="none">
+
+                <com.hiber.tools.layout.PercentRelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+
+                    <TextView
+                        android:id="@+id/tv_des_action"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/ACTION_ERR"
+                        android:textColor="@android:color/holo_red_dark"
+                        app:layout_textSizePercent="5.5%w" />
+
+                </com.hiber.tools.layout.PercentRelativeLayout>
+
+            </ScrollView>
+
+        </com.hiber.tools.layout.PercentRelativeLayout>
+
+        <TextView
+            android:id="@+id/tv_ok_action"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:gravity="center"
+            android:text="@string/ok_i_got_it"
+            android:textColor="@android:color/black"
+            android:textStyle="bold"
+            app:layout_heightPercent="15%w"
+            app:layout_textSizePercent="5%w" />
+
+        <View
+            android:id="@+id/v_split_action"
+            android:layout_width="match_parent"
+            android:layout_height="0.5dp"
+            android:layout_above="@id/tv_ok_action"
+            android:background="@android:color/darker_gray" />
+
+    </com.hiber.tools.layout.PercentRelativeLayout>
+
+</com.hiber.tools.layout.PercentRelativeLayout>

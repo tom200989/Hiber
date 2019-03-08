@@ -7,23 +7,23 @@ import android.view.View;
  */
 public class PermissBean {
     
-    private View view;
-    private StringBean stringBean;
+    private View permissView;// 自定义视图
+    private StringBean stringBean;// 默认情况下的字符内容对象
 
     public PermissBean() {
     }
 
     public PermissBean(View view, StringBean stringBean) {
-        this.view = view;
+        this.permissView = view;
         this.stringBean = stringBean;
     }
 
-    public View getView() {
-        return view;
+    public View getPermissView() {
+        return permissView;
     }
 
-    public void setView(View view) {
-        this.view = view;
+    public void setPermissView(View permissView) {
+        this.permissView = permissView;
     }
 
     public StringBean getStringBean() {

@@ -63,9 +63,9 @@ public abstract class RootFrag extends Fragment implements FragmentBackHandler {
     private int permissedCode = 0x101;
     private String[] initPermisseds;// 初始化需要申请的权限
     private String[] clickPermisseds;// 点击时需要申请的权限
-    public static final int ACTION_DEFAULT = 0;// 默认情况
-    public static final int ACTION_DENY = -1;// 拒绝情况
-    public static final int ACTION_PASS = 1;// 同意情况
+    private static final int ACTION_DEFAULT = 0;// 默认情况
+    private static final int ACTION_DENY = -1;// 拒绝情况
+    private static final int ACTION_PASS = 1;// 同意情况
     private HashMap<HashMap<String, Integer>, Integer> permissedActionMap;// < < 权限 , 权限状态 > , 用户行为 >
     public PermissedListener permissedListener;// 权限申请监听器
     private View permissView;// 权限自定义制图
@@ -211,7 +211,7 @@ public abstract class RootFrag extends Fragment implements FragmentBackHandler {
         //     Lgg.t(Cons.TAG2).ii("Rootfrag: click OK finish");
         // });
         // permissWindow.setVisibles(activity, permissView, stringBean);
-        
+
         // 采用fragment方案代替以上方案 20190306
         PermissInnerBean permissInnerBean = new PermissInnerBean();
         permissInnerBean.setLayoutId(layoutId);
@@ -231,7 +231,7 @@ public abstract class RootFrag extends Fragment implements FragmentBackHandler {
         Lgg.t(Cons.TAG2).ii("Rootfrag: preparePermissView()");
         PermissBean permissBean = overWritePermissedView();
         if (permissBean != null) {
-            permissView = permissBean.getView();
+            permissView = permissBean.getPermissView();
             stringBean = permissBean.getStringBean();
         }
     }
@@ -440,6 +440,7 @@ public abstract class RootFrag extends Fragment implements FragmentBackHandler {
      * @return 自定义权限视图
      */
     public PermissBean overWritePermissedView() {
+
         return null;
     }
 
@@ -451,7 +452,11 @@ public abstract class RootFrag extends Fragment implements FragmentBackHandler {
      * @param attach         附带
      * @param isTargetReload 是否重载视图
      */
-    public void toFrag(@NonNull Class current, @NonNull Class target, Object attach, boolean isTargetReload) {
+    public void toFrag(Class current, Class target, Object attach, boolean isTargetReload) {
+        if (current == null | target == null) {
+            toast(activity.getString(R.string.NULL_TIP), 5000);
+            return;
+        }
         try {
             RootMAActivity activity = (RootMAActivity) getActivity();
             if (activity != null) {
@@ -475,7 +480,11 @@ public abstract class RootFrag extends Fragment implements FragmentBackHandler {
      * @param isTargetReload 是否重载视图
      * @param delayMilis     延迟毫秒数
      */
-    public void toFrag(@NonNull Class current, @NonNull Class target, Object attach, boolean isTargetReload, int delayMilis) {
+    public void toFrag(Class current, Class target, Object attach, boolean isTargetReload, int delayMilis) {
+        if (current == null | target == null) {
+            toast(activity.getString(R.string.NULL_TIP), 5000);
+            return;
+        }
         try {
             RootMAActivity activity = (RootMAActivity) getActivity();
             if (activity != null) {

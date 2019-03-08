@@ -6,14 +6,14 @@ package com.hiber.bean;
  */
 public class StringBean {
 
-    private String title;
-    private String content;
-    private String cancel;
-    private String ok;
-    private int colorTitle;
-    private int colorContent;
-    private int colorCancel;
-    private int colorOk;
+    private String title;// 标题
+    private String content;// 描述内容
+    private String cancel;// 取消字符
+    private String ok;// 确认字符
+    private int colorTitle;// 标题颜色
+    private int colorContent;// 描述颜色
+    private int colorCancel;// 取消颜色
+    private int colorOk;// 确认颜色
 
     public StringBean() {
     }
