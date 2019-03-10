@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.hiber.hiber">
+
+    <application>
+
+        <!-- 异常Activity -->
+        <activity
+            android:launchMode="singleTask"
+            android:name="com.hiber.ui.ActivityNotFound"
+            android:screenOrientation="portrait">
+        </activity>
+
+        <!-- 默认Activity -->
+        <activity
+            android:launchMode="singleTask"
+            android:name="com.hiber.ui.HiberActivity"
+            android:screenOrientation="portrait">
+        </activity>
+    </application>
+
+</manifest>
