@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.hiber.tools.layout.PercentRelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_height="match_parent">
+
+    <com.qianli.PercentFrameLayout
+        android:id="@+id/fl_hiber_contain"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+    
+</com.hiber.tools.layout.PercentRelativeLayout>
