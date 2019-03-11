@@ -70,6 +70,7 @@ public abstract class RootFrag extends Fragment implements FragmentBackHandler {
     public PermissedListener permissedListener;// 权限申请监听器
     private View permissView;// 权限自定义制图
     private StringBean stringBean;// 权限默认字符内容
+    private PermissBean permissbean;
 
     @Override
     public void onAttach(Context context) {
@@ -177,11 +178,9 @@ public abstract class RootFrag extends Fragment implements FragmentBackHandler {
                     }
                 }
             }
-            // 把拒绝的权限接口对外提供
-            if (permissedListener != null) {
-                // 显示权限视窗
-                showPermissFrag(denyPermissions);
-            }
+
+            // 显示自定义权限弹窗
+            showPermissFrag(denyPermissions);
 
             // 点击申请情况--> 将点击权限设置为空
             if (isClickPermissed) {
@@ -198,21 +197,8 @@ public abstract class RootFrag extends Fragment implements FragmentBackHandler {
     private void showPermissFrag(List<String> denyPermissions) {
         // 接受并处理外部重写的自定义contentView
         preparePermissView();
-
-        // TOAT: 备用方案(缺点: 是需要用户同意顶层window显示的权限) // 弹出自定义权限框
-        // permissWindow = new PermissWindow();
-        // permissWindow.setOnClickCancelListener(() -> {
-        //     // 接口回调给开发者
-        //     permissedListener.permissionResult(false, denyPermissions.toArray(new String[denyPermissions.size()]));
-        //     Lgg.t(Cons.TAG2).ii("Rootfrag: click cancel finish");
-        // });
-        // permissWindow.setOnClickOkListener(() -> {
-        //     // 点击OK的行为不提供给开发人员
-        //     Lgg.t(Cons.TAG2).ii("Rootfrag: click OK finish");
-        // });
-        // permissWindow.setVisibles(activity, permissView, stringBean);
-
         // 采用fragment方案代替以上方案 20190306
+        Lgg.t(Cons.TAG).ii("prepare the permissInnerbean");
         PermissInnerBean permissInnerBean = new PermissInnerBean();
         permissInnerBean.setLayoutId(layoutId);
         permissInnerBean.setPermissView(permissView);
@@ -221,6 +207,7 @@ public abstract class RootFrag extends Fragment implements FragmentBackHandler {
         permissInnerBean.setDenyPermissons(denyPermissions.toArray(new String[denyPermissions.size()]));
         permissInnerBean.setCurrentFrag(getClass());
         // 启动权限视窗fragment
+        Lgg.t(Cons.TAG).ii("start to the PermissFragment");
         toFrag(getClass(), PermissFragment.class, permissInnerBean, true, 500);
     }
 
@@ -228,11 +215,11 @@ public abstract class RootFrag extends Fragment implements FragmentBackHandler {
      * 处理外部重写的自定义contentView
      */
     private void preparePermissView() {
-        Lgg.t(Cons.TAG2).ii("Rootfrag: preparePermissView()");
-        PermissBean permissBean = overWritePermissedView();
-        if (permissBean != null) {
-            permissView = permissBean.getPermissView();
-            stringBean = permissBean.getStringBean();
+        Lgg.t(Cons.TAG).ii("Rootfrag: preparePermissView()");
+        // PermissBean permissBean = overWritePermissedView();
+        if (permissbean != null) {
+            permissView = permissbean.getPermissView();
+            stringBean = permissbean.getStringBean();
         }
     }
 
@@ -435,13 +422,12 @@ public abstract class RootFrag extends Fragment implements FragmentBackHandler {
     }
 
     /**
-     * 重写自定义权限视图 (由外部选择是否重写)
+     * 设置permissbean
      *
-     * @return 自定义权限视图
+     * @param permissbean 权限对象
      */
-    public PermissBean overWritePermissedView() {
-
-        return null;
+    public void setPermissBean(PermissBean permissbean) {
+        this.permissbean = permissbean;
     }
 
     /**

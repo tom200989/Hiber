@@ -26,6 +26,7 @@ public class PermissFragment extends RootFrag {
 
     @Override
     public int onInflateLayout() {
+        Lgg.t(Cons.TAG).ii("PermissFragment onInflateLayout");
         return R.layout.frag_permission;
     }
 
@@ -36,6 +37,7 @@ public class PermissFragment extends RootFrag {
         // 获取数据
         if (yourBean instanceof PermissInnerBean) {
             // 接收数据
+            Lgg.t(Cons.TAG).ii("parse the PermissInnerBean");
             PermissInnerBean permissInnerBean = (PermissInnerBean) yourBean;
             String[] denyPermissons = permissInnerBean.getDenyPermissons();
             PermissedListener permissedListener = permissInnerBean.getPermissedListener();
@@ -48,6 +50,7 @@ public class PermissFragment extends RootFrag {
             permisWidget.setLastFragView(layoutId);
 
             // 初始化视图
+            Lgg.t(Cons.TAG).ii("permisWidget.setPermissView");
             permisWidget.setPermissView(permissView, stringBean, Arrays.asList(denyPermissons));
 
             // 设置Cancel点击事件
@@ -55,7 +58,9 @@ public class PermissFragment extends RootFrag {
                 // 10.2.关闭窗口
                 toFrag(getClass(), currentFrag, null, false);
                 // 10.3.接口回调
-                permissedListener.permissionResult(false, denyPermissons);
+                if (permissedListener != null) {
+                    permissedListener.permissionResult(false, denyPermissons);
+                }
                 Lgg.t(Cons.TAG2).ii("PermissFragment: click cancel callback outside");
             });
 
@@ -87,5 +92,13 @@ public class PermissFragment extends RootFrag {
     public boolean onBackPresss() {
         Lgg.t(Cons.TAG).ii("click permission fragment");
         return true;
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        // 此步一定要让外部传递的自定义view解除与parent的绑定关系否则报出如下异常
+        // The specified child already has a parent. You must call removeView() on the child's parent first.
+        permisWidget.removeView();
     }
 }

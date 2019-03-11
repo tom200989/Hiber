@@ -105,24 +105,24 @@ public class PermisWidget extends PercentRelativeLayout {
 
     /**
      * 设置视图
-     *
+     * 
      * @param view       自定义视图(允许为null)
      * @param stringBean 默认视图数据(允许为null, 为Null则使用英文)
      */
     public void setPermissView(@Nullable View view, @Nullable StringBean stringBean, List<String> denyPermisson) {
-        Lgg.t(Cons.TAG2).ii("PermissWidget: setPermissView() start");
+        Lgg.t(Cons.TAG).ii("PermissWidget: setPermissBean() start");
         rlContentSelf.setVisibility(view == null ? GONE : VISIBLE);
         rlContentDefault.setVisibility(rlContentSelf.getVisibility() == GONE ? VISIBLE : GONE);
         tvContent.setVisibility(stringBean != null ? VISIBLE : GONE);
         strongView.setVisibility(tvContent.getVisibility() == VISIBLE ? GONE : VISIBLE);
         // 自定义视图
         if (view != null) {
-            Lgg.t(Cons.TAG2).ii("PermissWidget: setPermissView() view ！= null");
+            Lgg.t(Cons.TAG).ii("PermissWidget: setPermissBean() view ！= null");
             rlContentSelf.addView(view);
         } else {
-            Lgg.t(Cons.TAG2).ii("PermissWidget: setPermissView() view == null");
+            Lgg.t(Cons.TAG).ii("PermissWidget: setPermissBean() view == null");
             if (stringBean != null) {
-                Lgg.t(Cons.TAG2).ii("PermissWidget: setPermissView() stringBean != null");
+                Lgg.t(Cons.TAG).ii("PermissWidget: setPermissBean() stringBean != null");
                 // 设置内容
                 tvTitle.setText(TextUtils.isEmpty(stringBean.getTitle()) ? context.getString(R.string.wd_title) : stringBean.getTitle());
                 tvContent.setText(TextUtils.isEmpty(stringBean.getContent()) ? context.getString(R.string.wd_content) : stringBean.getContent());
@@ -143,16 +143,26 @@ public class PermisWidget extends PercentRelativeLayout {
                 }
 
             } else {
-                Lgg.t(Cons.TAG2).ii("PermissWidget: setPermissView() stringBean == null");
+                Lgg.t(Cons.TAG).ii("PermissWidget: setPermissBean() stringBean == null");
                 tvTitle.setText(context.getString(R.string.wd_title));
                 strongView.createDefault(getErrorLogoList(denyPermisson.size()), getPermissDesList(denyPermisson));
                 tvCancel.setText(context.getString(R.string.wd_cancel));
                 tvOk.setText(context.getString(R.string.wd_ok));
             }
         }
-        Lgg.t(Cons.TAG2).ii("PermissWidget: setPermissView() end");
+        Lgg.t(Cons.TAG2).ii("PermissWidget: setPermissBean() end");
     }
 
+    /**
+     * 移除view
+     * 此步做法是为了在切换到后台是, 销毁外部工程传递进来的引用.
+     * 该步骤一般在fragment被销毁时要主动调用这句代码
+     * 否则fragment在被销毁时会被view检测到仍与上一个父类绑定, 出现如下异常
+     * The specified child already has a parent. You must call removeView() on the child's parent first.
+     */
+    public void removeView(){
+        rlContentSelf.removeAllViews();
+    }
     /* -------------------------------------------- private -------------------------------------------- */
 
     /**
