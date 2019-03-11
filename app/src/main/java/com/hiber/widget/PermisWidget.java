@@ -1,6 +1,7 @@
 package com.hiber.widget;
 
 import android.content.Context;
+import android.graphics.drawable.Drawable;
 import android.support.annotation.LayoutRes;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
@@ -16,6 +17,9 @@ import com.hiber.hiber.R;
 import com.hiber.tools.Lgg;
 import com.hiber.tools.layout.PercentRelativeLayout;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /*
  * Created by qianli.ma on 2019/2/20 0020.
  */
@@ -29,6 +33,7 @@ public class PermisWidget extends PercentRelativeLayout {
     private RelativeLayout rlContentDefault;// 默认区域
     private TextView tvTitle;// 标题
     private TextView tvContent;// 内容
+    private StrongView strongView;// 显示权限列表的视图
     private TextView tvCancel;// 取消
     private TextView tvOk;// 确定
 
@@ -59,6 +64,7 @@ public class PermisWidget extends PercentRelativeLayout {
         rlContentDefault = inflate.findViewById(R.id.rl_content_default);
         tvTitle = inflate.findViewById(R.id.tv_title_default);
         tvContent = inflate.findViewById(R.id.tv_content_default);
+        strongView = inflate.findViewById(R.id.sv_content_perList);
         tvCancel = inflate.findViewById(R.id.tv_cancel);
         tvOk = inflate.findViewById(R.id.tv_ok);
     }
@@ -103,15 +109,18 @@ public class PermisWidget extends PercentRelativeLayout {
      * @param view       自定义视图(允许为null)
      * @param stringBean 默认视图数据(允许为null, 为Null则使用英文)
      */
-    public void setPermissView(@Nullable View view, @Nullable StringBean stringBean) {
+    public void setPermissView(@Nullable View view, @Nullable StringBean stringBean, List<String> denyPermisson) {
         Lgg.t(Cons.TAG2).ii("PermissWidget: setPermissView() start");
         rlContentSelf.setVisibility(view == null ? GONE : VISIBLE);
         rlContentDefault.setVisibility(rlContentSelf.getVisibility() == GONE ? VISIBLE : GONE);
+        tvContent.setVisibility(stringBean != null ? VISIBLE : GONE);
+        strongView.setVisibility(tvContent.getVisibility() == VISIBLE ? GONE : VISIBLE);
+        // 自定义视图
         if (view != null) {
-            Lgg.t(Cons.TAG2).ii("PermissWidget: setPermissView() view == null");
+            Lgg.t(Cons.TAG2).ii("PermissWidget: setPermissView() view ！= null");
             rlContentSelf.addView(view);
         } else {
-            Lgg.t(Cons.TAG2).ii("PermissWidget: setPermissView() view != null");
+            Lgg.t(Cons.TAG2).ii("PermissWidget: setPermissView() view == null");
             if (stringBean != null) {
                 Lgg.t(Cons.TAG2).ii("PermissWidget: setPermissView() stringBean != null");
                 // 设置内容
@@ -136,12 +145,42 @@ public class PermisWidget extends PercentRelativeLayout {
             } else {
                 Lgg.t(Cons.TAG2).ii("PermissWidget: setPermissView() stringBean == null");
                 tvTitle.setText(context.getString(R.string.wd_title));
-                tvContent.setText(context.getString(R.string.wd_content));
+                strongView.createDefault(getErrorLogoList(denyPermisson.size()), getPermissDesList(denyPermisson));
                 tvCancel.setText(context.getString(R.string.wd_cancel));
                 tvOk.setText(context.getString(R.string.wd_ok));
             }
         }
         Lgg.t(Cons.TAG2).ii("PermissWidget: setPermissView() end");
+    }
+
+    /* -------------------------------------------- private -------------------------------------------- */
+
+    /**
+     * 获取错误图标
+     *
+     * @param count 需要创建的数量
+     */
+    private List<Drawable> getErrorLogoList(int count) {
+        List<Drawable> logos = new ArrayList<>();
+        for (int i = 0; i < count; i++) {
+            logos.add(getResources().getDrawable(R.drawable.errors));
+        }
+        return logos;
+    }
+
+    /**
+     * 处理权限描述
+     *
+     * @param denyPermisson 权限原文
+     * @return 处理后的集合
+     */
+    private List<String> getPermissDesList(List<String> denyPermisson) {
+        List<String> permisseds = new ArrayList<>();
+        for (String deny : denyPermisson) {
+            String[] split = deny.split("\\.");
+            permisseds.add(split[split.length - 1]);
+        }
+        return permisseds;
     }
 
     /* -------------------------------------------- impl -------------------------------------------- */

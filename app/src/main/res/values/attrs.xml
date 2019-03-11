@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- 百分比布局 -->
     <declare-styleable name="PercentLayout_Layout">
         <attr name="layout_widthPercent" format="string"/>
         <attr name="layout_heightPercent" format="string"/>
@@ -24,5 +25,32 @@
         <attr name="layout_paddingBottomPercent" format="string"/>
         <attr name="layout_paddingLeftPercent" format="string"/>
         <attr name="layout_paddingRightPercent" format="string"/>
+    </declare-styleable>
+
+    <!-- strongview -->
+    <declare-styleable name="StrongView">
+        <!-- 允许的最大高度 -->
+        <attr name="sv_maxHeightSelf" format="float" />
+
+        <!-- 条目占总布局高百分比 -->
+        <attr name="sv_item_height_percent" format="float" />
+
+        <!-- 图标占所在布局的高百分比 -->
+        <attr name="sv_iv_height_percent" format="float" />
+
+        <!-- 文本占所在布局的高百分比 -->
+        <attr name="sv_tv_size_percent" format="float" />
+
+        <!-- 图标左侧间距 -->
+        <attr name="sv_iv_margin_start_dp" format="integer" />
+
+        <!-- 图标右侧间距 -->
+        <attr name="sv_iv_margin_end_dp" format="integer" />
+
+        <!-- 文本距离图标的左侧间距 -->
+        <attr name="sv_tv_margin_start_to_iv_dp" format="integer" />
+
+        <!-- 文本距离图标的右侧间距 -->
+        <attr name="sv_tv_margin_end_to_iv_dp" format="integer" />
     </declare-styleable>
 </resources>

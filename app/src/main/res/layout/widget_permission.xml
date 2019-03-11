@@ -50,8 +50,7 @@
             <com.hiber.tools.layout.PercentRelativeLayout
                 android:id="@+id/rl_content_default"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                app:layout_heightPercent="30%h">
+                android:layout_height="wrap_content">
 
                 <TextView
                     android:id="@+id/tv_title_default"
@@ -61,7 +60,19 @@
                     android:textColor="@android:color/black"
                     android:textStyle="bold"
                     app:layout_marginPercent="5%w"
-                    app:layout_textSizePercent="10%h" />
+                    app:layout_textSizePercent="5%w" />
+
+                <com.hiber.widget.StrongView
+                    app:sv_tv_size_percent="0.3"
+                    app:sv_iv_height_percent="0.3"
+                    android:id="@+id/sv_content_perList"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/tv_title_default"
+                    android:layout_centerHorizontal="true"
+                    app:layout_marginBottomPercent="5%w"
+                    app:layout_widthPercent="90%w"
+                    app:sv_maxHeightSelf="0.7" />
 
                 <TextView
                     android:id="@+id/tv_content_default"
@@ -71,7 +82,9 @@
                     android:layout_centerHorizontal="true"
                     android:text="@string/wd_content"
                     android:textColor="@android:color/darker_gray"
-                    app:layout_textSizePercent="8%h"
+                    android:visibility="gone"
+                    app:layout_marginBottomPercent="5%w"
+                    app:layout_textSizePercent="4.5%w"
                     app:layout_widthPercent="90%w" />
 
             </com.hiber.tools.layout.PercentRelativeLayout>

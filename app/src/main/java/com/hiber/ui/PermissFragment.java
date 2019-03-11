@@ -15,6 +15,8 @@ import com.hiber.impl.PermissedListener;
 import com.hiber.tools.Lgg;
 import com.hiber.widget.PermisWidget;
 
+import java.util.Arrays;
+
 /*
  * Created by qianli.ma on 2019/3/4 0004.
  */
@@ -46,7 +48,7 @@ public class PermissFragment extends RootFrag {
             permisWidget.setLastFragView(layoutId);
 
             // 初始化视图
-            permisWidget.setPermissView(permissView, stringBean);
+            permisWidget.setPermissView(permissView, stringBean, Arrays.asList(denyPermissons));
 
             // 设置Cancel点击事件
             permisWidget.setOnClickCancelListener(() -> {

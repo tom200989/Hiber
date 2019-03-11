@@ -1,0 +1,54 @@
+该文档为strongview自定义控件说明
+[PART 1: 需求]
+该控件为自适应屏幕的自由缩放控件, 现阶段只显示最为简单的条目文本, 后期继续完善自定义视图等功能
+
+[PART 2: 原理]
+使用new的方式把各类控件和布局动态实现出来, 并提供自定义属性进行控制.
+
+[PART 3: 属性]
+
+    private float   SV_MAX_HEIGHT_SELF          = 0.8f;             // 整体控件的最大高度 (默认80%)
+    private float   ITEM_HEIGHT_PERCENT         = 0.05f;            // 条目占总布局高百分比(默认5%)
+    private float   IV_HEIGHT_PERCENT           = 0.5f;             // 图标占所在布局的高百分比(默认50%)
+    private float   TV_SIZE_PERCENT             = 0.5f;             // 文本占所在布局的高百分比(默认50%)
+    private int     IV_MARGIN_START_DP          = 0;                // 图标左侧间距(默认0dp)
+    private int     IV_MARGIN_END_DP            = 0;                // 图标右侧间距(默认0dp)
+    private int     TV_MARGIN_START_TO_IV_DP    = 15;               // 文本距离图标的左侧间距(默认15dp)
+    private int     TV_MARGIN_END_TO_IV_DP      = 15;               // 文本距离图标的右侧间距(默认15dp)
+    
+[PART 4: 使用]
+<布局XML>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+        <com.strongitemview.strongeitemview.StrongView
+            android:id="@+id/stv"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/tv_title"
+            android:background="@android:color/holo_red_dark"
+            app:sv_maxHeightSelf="0.7" />
+
+</RelativeLayout>
+
+<java代码>
+1.查找控件
+StrongView strongView = findViewById(R.id.stv);
+
+2.设置图标和数据
+@param1: List<Drawable> draws;  // 图标
+@param2: List<String> texts;    // 文本
+strongView.createDefault(draws, texts);
+
+[PART 5: 注意事项]
+1.控件以aar的形式导入
+2.需要在主工程同步添加V4、V7、recyclerView的依赖
+    api 'com.android.support:appcompat-v7:28.0.0'
+    api 'com.android.support:support-v4:28.0.0'
+    api 'com.android.support:recyclerview-v7:28.0.0'
+
+
