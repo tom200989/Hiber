@@ -277,6 +277,8 @@ public class StrongView extends LinearLayout {
     }
 
     private void PlanA() {
+        // 0.要先把原有的view清除, 否则会重复添加
+        removeAllViews();
         // 1.创建列表控件
         RecyclerView rcv = new RecyclerView(getContext());
         rcv.setOverScrollMode(OVER_SCROLL_NEVER);
@@ -303,6 +305,8 @@ public class StrongView extends LinearLayout {
      * @param contentList 内容集合
      */
     private void PlanB(List<Drawable> draws, List<String> contentList) {
+        // 0.要先把原有的view清除, 否则会重复添加
+        removeAllViews();
         // 1.新增包裹布局--> 注: 直接addview在跟布局是不能的
         LinearLayout llContent = new LinearLayout(getContext());
         llContent.setOrientation(LinearLayout.VERTICAL);

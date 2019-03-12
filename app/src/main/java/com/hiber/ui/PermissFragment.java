@@ -94,6 +94,7 @@ public class PermissFragment extends RootFrag {
         return true;
     }
 
+    
     @Override
     public void onDestroyView() {
         super.onDestroyView();
