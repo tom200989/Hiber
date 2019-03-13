@@ -2,12 +2,16 @@ package com.hiber.hiber;
 
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.support.annotation.ColorRes;
+import android.support.annotation.DrawableRes;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.annotation.StringRes;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.content.PermissionChecker;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -90,7 +94,7 @@ public abstract class RootFrag extends Fragment implements FragmentBackHandler {
         // 3.绑定butterknife
         unbinder = ButterKnife.bind(this, inflateView);
         // 4.加载完视图后的操作--> 由子类重写
-        initViewFinish();
+        initViewFinish(inflateView);
         // 5.初始化权限
         initPermisseds = initPermissed();
         initPermissedActionMap(initPermisseds);
@@ -384,7 +388,7 @@ public abstract class RootFrag extends Fragment implements FragmentBackHandler {
     /**
      * 首次初始化视图完成后的操作
      */
-    public void initViewFinish() {
+    public void initViewFinish(View inflateView) {
 
     }
 
@@ -634,6 +638,26 @@ public abstract class RootFrag extends Fragment implements FragmentBackHandler {
         } else {
             Lgg.t(Cons.TAG).ee("RootHiber--> toast() error: RootMAActivity is null");
         }
+    }
+
+    /**
+     * 获取图片资源 (为了适配android 9.0 ~ 10.0)
+     *
+     * @param resId 图片资源
+     * @return drawable
+     */
+    public Drawable getRootDrawable(@DrawableRes int resId) {
+        return ContextCompat.getDrawable(activity, resId);
+    }
+
+    /**
+     * 获取颜色资源 (为了适配android 9.0 ~ 10.0)
+     *
+     * @param resId 颜色资源
+     * @return color
+     */
+    public int getRootColor(@ColorRes int resId) {
+        return ContextCompat.getColor(activity, resId);
     }
 
     @Override
