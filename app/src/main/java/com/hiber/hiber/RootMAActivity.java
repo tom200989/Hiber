@@ -230,7 +230,7 @@ public abstract class RootMAActivity extends FragmentActivity {
     private boolean checkActionCategory() {
 
         // 如果是小于Android 4.4, 则不能使用反射, PackageManager没有对应的API
-        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.KITKAT) {
+        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.LOLLIPOP) {
             return true;
         }
 
