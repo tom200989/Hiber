@@ -229,7 +229,7 @@ public abstract class RootMAActivity extends FragmentActivity {
     @SuppressWarnings("unchecked")// 消除「method.invoke(packageManager, getPackageName()」的警告
     private boolean checkActionCategory() {
 
-        // 如果是小于Android 4.4, 则不能使用反射, PackageManager没有对应的API
+        // 如果是小于Android 6.0, 则不能使用反射, PackageManager没有对应的API
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
             return true;
         }
