@@ -47,7 +47,6 @@ dependencies {
     //noinspection GradleDependency
     api 'com.jakewharton:butterknife:9.0.0-rc2'
     //noinspection GradleDependency
-    implementation 'com.android.support.constraint:constraint-layout:1.1.3'
     annotationProcessor 'com.jakewharton:butterknife-compiler:9.0.0-rc2'
 
     // multiDex分包处理
