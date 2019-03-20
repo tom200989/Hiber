@@ -611,6 +611,22 @@ public abstract class RootFrag extends Fragment implements FragmentBackHandler {
     }
 
     /**
+     * 清理Activity
+     *
+     * @param keepActivitys 需要保留的Activity
+     */
+    public void killActivitys(Class... keepActivitys) {
+        ActivityHelper.killActivitys(keepActivitys);
+    }
+
+    /**
+     * 清理全部的Activity
+     */
+    public void killAllActivitys() {
+        ActivityHelper.killAllActivity();
+    }
+
+    /**
      * 吐司提示
      *
      * @param tip      提示

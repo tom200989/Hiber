@@ -50,7 +50,7 @@ public abstract class RootMAActivity extends FragmentActivity {
     /**
      * fragment调度器
      */
-    public FraHelpers fraHelpers;
+    protected FraHelpers fraHelpers;
 
     /**
      * 日志标记
@@ -97,15 +97,10 @@ public abstract class RootMAActivity extends FragmentActivity {
      */
     private HashMap<String, Class> classFragMap = new HashMap<>();
 
-    // 记录当前的初始化状态
-    private String FLAG_ONCREATED = "onCreate";
-    private String FLAG_NEW_INTENT = "onNewIntent";
-    private String FLAG_CURRENT = FLAG_ONCREATED;// 默认onCreated
-
     /**
      * 通过extra方式需要接收的信标符号
      */
-    public static String INTENT_NAME = "SkipBean";
+    protected static String INTENT_NAME = "SkipBean";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -114,8 +109,7 @@ public abstract class RootMAActivity extends FragmentActivity {
         boolean isActionCategoryMatch = checkActionCategory();
         if (isActionCategoryMatch) {// 0.1.符合条件则正常执行
 
-            if (checkSingleTask()) {// 0.2.singleTask配置符合
-                FLAG_CURRENT = FLAG_ONCREATED;
+            if (checkStardard()) {// 0.2.singleTask配置符合
                 Lgg.t(TAG).vv("Method--> " + getClass().getSimpleName() + ":onCreate()");
                 // 1.获取初始化配置对象
                 rootProperty = initProperty();
@@ -140,7 +134,7 @@ public abstract class RootMAActivity extends FragmentActivity {
                 }
 
             } else {// 没有配置singleTask
-                String err = getString(R.string.SINGLE_TASK_TIP);
+                String err = getString(R.string.STANDARD_TIP);
                 toast(err, 5000);
                 Lgg.t(TAG).ee(err);
             }
@@ -150,14 +144,6 @@ public abstract class RootMAActivity extends FragmentActivity {
             toast(err, 5000);
             Lgg.t(TAG).ee(err);
         }
-    }
-
-    @Override
-    protected void onNewIntent(Intent intent) {
-        FLAG_CURRENT = FLAG_NEW_INTENT;
-        Lgg.t(TAG).vv("Method--> " + getClass().getSimpleName() + ":onNewIntent()");
-        super.onNewIntent(intent);
-        handleIntentExtra(intent);
     }
 
     /**
@@ -171,16 +157,8 @@ public abstract class RootMAActivity extends FragmentActivity {
         Serializable extra = intent.getSerializableExtra(INTENT_NAME);
         // 0.1.序列为空(启动APP初始化时)
         if (extra == null) {
-            /*
-             * 在skipbean为null的前提下, 如果 FLAG_CURRENT == FLAG_ONNEWINTENT
-             * 则有如下两种情况: 1.首次进入APP. 2.从后台切回来时
-             * 如果时候首次进入app, skipbean为空, 此时默认初始第一个即可
-             * 如果是从后台切回来, 会执行onNewIntent, 但此时skipbean为空, 因此无需操作
-             */
-            if (FLAG_CURRENT.equalsIgnoreCase(FLAG_ONCREATED)) {
-                // 0.2.初始化第一个
-                initFragment(0, "");
-            }
+            // 0.2.初始化第一个
+            initFragment(0, "");
         } else {
             // 0.2.判断开发是否传递错误参数
             boolean isSkipbeanType = extra instanceof SkipBean;
@@ -199,12 +177,7 @@ public abstract class RootMAActivity extends FragmentActivity {
                 Class targetFragClass = searchFragClassByName(skipBean.getTargetFragmentClassName());
                 int classFragIndex = searchFragIndexByClass(targetFragClass);
                 Object attach = skipBean.getAttach();
-                boolean isTargetReload = skipBean.isTargetReload();
-                if (FLAG_CURRENT.equalsIgnoreCase(FLAG_NEW_INTENT)) {
-                    toFrag(getClass(), targetFragClass, attach, isTargetReload);
-                } else {
-                    initFragment(classFragIndex, attach);
-                }
+                initFragment(classFragIndex, attach);
             } else {
                 // 不是自身AC(推送)
                 Activity activity = this;
@@ -214,9 +187,6 @@ public abstract class RootMAActivity extends FragmentActivity {
                 int delay = 0;
                 RootHelper.toActivityImplicit(activity, targetActivityClassName, isSingleTop, isFinish, isOverridePending, delay, skipBean);
             }
-
-            // 恢复标记位
-            FLAG_CURRENT = FLAG_ONCREATED;
         }
     }
 
@@ -234,7 +204,7 @@ public abstract class RootMAActivity extends FragmentActivity {
             return true;
         }
 
-        // > 4.4 , 使用反射调用PackageManager的获取全部intent-filter
+        // >= 6.0 , 使用反射调用PackageManager的获取全部intent-filter
         try {
             PackageManager packageManager = getPackageManager();
             Method method = packageManager.getClass().getDeclaredMethod("getAllIntentFilters", String.class);
@@ -259,20 +229,20 @@ public abstract class RootMAActivity extends FragmentActivity {
     }
 
     /**
-     * @return 检查是否配置了singleTask
+     * @return 检查是否配置了stardard
      */
-    private boolean checkSingleTask() {
+    private boolean checkStardard() {
         ComponentName componentName = getComponentName();
         ActivityInfo activityInfo;
         try {
             activityInfo = getPackageManager().getActivityInfo(componentName, PackageManager.GET_META_DATA);
             int launchMode = activityInfo.launchMode;
-            if (launchMode != ActivityInfo.LAUNCH_SINGLE_TASK) {
+            if (launchMode != ActivityInfo.LAUNCH_MULTIPLE) {
                 return false;
             }
         } catch (Exception e) {
             e.printStackTrace();
-            String singleTaskErr = getString(R.string.SINGLE_TASK_ERR);
+            String singleTaskErr = getString(R.string.STANDARD_ERR);
             Lgg.t(Cons.TAG).ee(singleTaskErr);
             toast(singleTaskErr, 5000);
         }
@@ -540,6 +510,22 @@ public abstract class RootMAActivity extends FragmentActivity {
         skipBean.setTargetReload(true);
         skipBean.setCurrentACFinish(false);
         return skipBean;
+    }
+
+    /**
+     * 清理Activity
+     *
+     * @param keepActivitys 需要保留的Activity
+     */
+    public void killActivitys(Class... keepActivitys) {
+        ActivityHelper.killActivitys(keepActivitys);
+    }
+
+    /**
+     * 清理全部的Activity
+     */
+    public void killAllActivitys() {
+        ActivityHelper.killAllActivity();
     }
 
     /* -------------------------------------------- abstract -------------------------------------------- */

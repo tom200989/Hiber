@@ -18,8 +18,8 @@
     </string>
     <string name="ROOT_PROPERTY_ERR">RootProperty不能为空\n应用闪退</string>
     <string name="INFLECT_ERR">检测action机制反射异常</string>
-    <string name="SINGLE_TASK_ERR">检测LaunchMode发生异常\n请手动检测activity是否配置了singleTask模式</string>
-    <string name="SINGLE_TASK_TIP">当前activity没有设置为singleTask模式\n请务必设置</string>
+    <string name="STANDARD_ERR">检测LaunchMode发生异常\n请手动检测activity是否配置了standard模式</string>
+    <string name="STANDARD_TIP">当前activity没有设置为standard模式\n请务必设置</string>
     <string name="NULL_TIP">使用 [toFragActivity] 方法必须要求\ncurrent,targetAC, target不能为null</string>
     <string name="SKIPBEAN_TIP">请确保传输的数据格式为Skipbean对象\n可以使用RootMAActivity:createSkipbean()生成传输对象</string>
     

@@ -12,6 +12,8 @@ import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.util.DisplayMetrics;
 
+import com.hiber.tools.Sgg;
+
 import java.util.Locale;
 
 public class LangHelper {
@@ -31,9 +33,9 @@ public class LangHelper {
      */
     public static void transfer(Context context, @NonNull String lang, @Nullable String cn) {
         // 1.提交语言到APP缓存
-        Sgg.getInstance(context).putString(Cons.LANGUAGE, lang);
-        Sgg.getInstance(context).putString(Cons.COUNTRY, cn == null ? "" : cn);
-        Sgg.getInstance(context).putBoolean(Cons.IS_FROM_APP, true);
+        Sgg.getInstance(context).putString(LangAttr.LANGUAGE, lang);
+        Sgg.getInstance(context).putString(LangAttr.COUNTRY, cn == null ? "" : cn);
+        Sgg.getInstance(context).putBoolean(LangAttr.IS_FROM_APP, true);
         // 2.从Activity方更新语言配置
         updateConfiguration(context, lang, cn);
         // 3.从Application方更新语言配置
@@ -55,8 +57,8 @@ public class LangHelper {
         String lang = locale.getLanguage();
         String cn = locale.getCountry();
         // 1.1.提交语言到APP缓存
-        Sgg.getInstance(context).putString(Cons.LANGUAGE, lang);
-        Sgg.getInstance(context).putString(Cons.COUNTRY, cn);
+        Sgg.getInstance(context).putString(LangAttr.LANGUAGE, lang);
+        Sgg.getInstance(context).putString(LangAttr.COUNTRY, cn);
         // 2.从Activity方更新语言配置
         updateConfiguration(context, lang, cn);
         // 3.从Application方更新语言配置
@@ -131,10 +133,10 @@ public class LangHelper {
         }
 
         // 2.获取上次APP保存的语言 (APP内部设置的语言优先)
-        boolean isAppLang = Sgg.getInstance(context).getBoolean(Cons.IS_FROM_APP, false);
+        boolean isAppLang = Sgg.getInstance(context).getBoolean(LangAttr.IS_FROM_APP, false);
         if (isAppLang) {
-            String lang = Sgg.getInstance(context).getString(Cons.LANGUAGE, locale.getLanguage());
-            String cn = Sgg.getInstance(context).getString(Cons.COUNTRY, locale.getCountry());
+            String lang = Sgg.getInstance(context).getString(LangAttr.LANGUAGE, locale.getLanguage());
+            String cn = Sgg.getInstance(context).getString(LangAttr.COUNTRY, locale.getCountry());
             if (TextUtils.isEmpty(cn)) {
                 locale = new Locale(lang);
             } else {

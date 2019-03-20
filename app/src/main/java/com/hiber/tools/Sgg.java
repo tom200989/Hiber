@@ -1,4 +1,4 @@
-package com.hiber.hiber.language;
+package com.hiber.tools;
 
 import android.content.Context;
 import android.content.SharedPreferences;

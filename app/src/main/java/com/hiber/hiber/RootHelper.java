@@ -12,22 +12,12 @@ import com.hiber.tools.Lgg;
 /**
  * Created by qianli.ma on 2018/7/24 0024.
  */
-
 public class RootHelper {
-
-    /**
-     * 结束当前activity
-     *
-     * @param activity 当前activity
-     */
-    public static void finishOver(Activity activity) {
-        activity.finish();
-    }
 
     /**
      * kill app
      */
-    public static void kill() {
+    protected static void kill() {
         Process.killProcess(Process.myPid());
     }
 
@@ -37,7 +27,7 @@ public class RootHelper {
      * @param tip      提示
      * @param duration 时长
      */
-    public static void toast(Context context, String tip, int duration) {
+    protected static void toast(Context context, String tip, int duration) {
         show(context, tip, duration);
     }
 
@@ -59,7 +49,7 @@ public class RootHelper {
             activity.runOnUiThread(() -> Toast.makeText(activity, tip, finalDuration).show());
         }
     }
-    
+
     /**
      * 跳转
      *
@@ -71,12 +61,12 @@ public class RootHelper {
      */
     @Deprecated
     private static void toActivity(final Activity activity,// 上下文
-                                  final Class<?> clazz,// 目标
-                                  final boolean isSingleTop,// 独立任务栈
-                                  final boolean isFinish,// 结束当前
-                                  boolean overridepedding, // 转场
-                                  final int delay, // 延迟
-                                  final SkipBean skipBean // 是否传递数据
+                                   final Class<?> clazz,// 目标
+                                   final boolean isSingleTop,// 独立任务栈
+                                   final boolean isFinish,// 结束当前
+                                   boolean overridepedding, // 转场
+                                   final int delay, // 延迟
+                                   final SkipBean skipBean // 是否传递数据
 
     ) {
         new Thread(() -> {
@@ -124,13 +114,13 @@ public class RootHelper {
      * @param overridepedding F:消除转场闪烁 T:保留转场闪烁
      * @param delay           延迟
      */
-    public static void toActivityImplicit(final Activity activity,// 上下文
-                                          final String action,// 目标
-                                          final boolean isSingleTop,// 独立任务栈
-                                          final boolean isFinish,// 结束当前
-                                          boolean overridepedding, // 转场
-                                          final int delay, // 延迟
-                                          final SkipBean skipBean // 是否传递数据
+    protected static void toActivityImplicit(final Activity activity,// 上下文
+                                             final String action,// 目标
+                                             final boolean isSingleTop,// 独立任务栈
+                                             final boolean isFinish,// 结束当前
+                                             boolean overridepedding, // 转场
+                                             final int delay, // 延迟
+                                             final SkipBean skipBean // 是否传递数据
     ) {
         new Thread(() -> {
             try {
