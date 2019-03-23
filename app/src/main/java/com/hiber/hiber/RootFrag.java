@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.pm.PackageManager;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.annotation.ColorRes;
 import android.support.annotation.DrawableRes;
 import android.support.annotation.NonNull;
@@ -212,7 +213,8 @@ public abstract class RootFrag extends Fragment implements FragmentBackHandler {
         permissInnerBean.setCurrentFrag(getClass());
         // 启动权限视窗fragment
         Lgg.t(Cons.TAG).ii("start to the PermissFragment");
-        toFrag(getClass(), PermissFragment.class, permissInnerBean, true, 500);
+        new Handler().postDelayed(() -> toFrag(getClass(), PermissFragment.class, permissInnerBean, true), 0);
+
     }
 
     /**

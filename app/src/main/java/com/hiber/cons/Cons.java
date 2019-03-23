@@ -14,6 +14,11 @@ public class Cons {
      * 权限流程标记
      */
     public static String TAG2 = "PermissW";// 权限流程标记
+    
+    /**
+     * Activity统一管理流程
+     */
+    public static String TAG3 = "ActivityLife";// 权限流程标记
 
     /**
      * 默认的工程目录名
