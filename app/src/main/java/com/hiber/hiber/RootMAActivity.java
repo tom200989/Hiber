@@ -200,7 +200,12 @@ public abstract class RootMAActivity extends FragmentActivity {
     private boolean checkActionCategory() {
 
         // 如果是小于Android 6.0, 则不能使用反射, PackageManager没有对应的API
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M | Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            StringBuilder builder = new StringBuilder();
+            builder.append("根据Android规定, 在Android >= P之后不能使用反射机制获取IntentFilters");
+            builder.append("\n");
+            builder.append("如使用框架中出现异常, 请根据开发文档自行检测Manifest文件中Action以及Category是否符合开发规范");
+            Lgg.t(TAG).ee(builder.toString());
             return true;
         }
 
