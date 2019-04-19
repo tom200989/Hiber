@@ -24,7 +24,9 @@ import com.hiber.tools.Lgg;
 import com.hiber.tools.backhandler.BackHandlerHelper;
 import com.hiber.tools.barcompat.StatusBarCompat;
 import com.hiber.ui.DefaultFragment;
+import com.hiber.ui.LintActivity;
 import com.hiber.ui.PermissFragment;
+import com.lintcheck.lintcheck.helper.LintHelper;
 
 import org.greenrobot.eventbus.EventBus;
 
@@ -34,6 +36,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Objects;
 
 /*
  * Created by qianli.ma on 2018/6/20 0020.
@@ -93,6 +96,11 @@ public abstract class RootMAActivity extends FragmentActivity {
     private boolean isFullScreen = true;
 
     /**
+     * 包名, 用于Lint检测
+     */
+    private String packageName = "";
+
+    /**
      * 存储「frag绝对路径, frag字节码」
      */
     private HashMap<String, Class> classFragMap = new HashMap<>();
@@ -105,6 +113,7 @@ public abstract class RootMAActivity extends FragmentActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         // 0.检测action与category是否符合规范
         boolean isActionCategoryMatch = checkActionCategory();
         if (isActionCategoryMatch) {// 0.1.符合条件则正常执行
@@ -120,11 +129,30 @@ public abstract class RootMAActivity extends FragmentActivity {
                     if (isFullScreen) {
                         requestWindowFeature(Window.FEATURE_NO_TITLE);
                     }
-                    // 4.填充视图
+
+                    // 4.android 运行版本在 [android 9.0 P] 以下才做规范判断
+                    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.P) {
+                        // 4.1.包名检查
+                        if (!packageCheck(packageName)) {
+                            toast(R.string.PACKAGE_NAME_NOT_MATCH, 5000);
+                            return;
+                        }
+
+                        // 4.2.lint检查开发规范
+                        List<Integer> lintCodes = lintCheck(packageName);
+                        if (lintCodes.size() > 0) {
+                            Intent intent = new Intent(this, LintActivity.class);
+                            intent.putIntegerArrayListExtra(LintHelper.class.getSimpleName(), (ArrayList<Integer>) lintCodes);
+                            startActivity(intent);
+                            return;
+                        }
+                    }
+
+                    // 5.填充视图
                     setContentView(layoutId);
-                    // 5.设置状态栏颜色
+                    // 6.设置状态栏颜色
                     StatusBarCompat.setStatusBarColor(this, getResources().getColor(colorStatusBar), false);
-                    // 6.处理从其他组件传递过来的数据
+                    // 7.处理从其他组件传递过来的数据
                     handleIntentExtra(getIntent());
 
                 } else {// 属性对象为空
@@ -144,6 +172,35 @@ public abstract class RootMAActivity extends FragmentActivity {
             toast(err, 5000);
             Lgg.t(TAG).ee(err);
         }
+    }
+
+    /**
+     * 包名检查
+     *
+     * @param packageName 包名
+     * @return T: 通过
+     */
+    private boolean packageCheck(String packageName) {
+        if (TextUtils.isEmpty(packageName)) {
+            toast(getString(R.string.PACKAGE_NAME_NOT_SET), 5000);
+            return false;
+        }
+        if (!Objects.requireNonNull(getClass().getPackage()).getName().startsWith(packageName)) {
+            toast(getString(R.string.PACKAGE_NAME_NOT_MATCH), 5000);
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * lint检查归法
+     *
+     * @param packageName 包名
+     */
+    private List<Integer> lintCheck(String packageName) {
+        LintHelper.extendActivity = RootMAActivity.class;
+        LintHelper.extendFragment = RootFrag.class;
+        return LintHelper.getLintResult(packageName);
     }
 
     /**
@@ -313,6 +370,7 @@ public abstract class RootMAActivity extends FragmentActivity {
         isSaveInstanceState = rootProperty.isSaveInstanceState();
         projectDirName = TextUtils.isEmpty(rootProperty.getProjectDirName()) ? projectDirName : rootProperty.getProjectDirName();
         containId = rootProperty.getContainId() <= 0 ? containId : rootProperty.getContainId();
+        packageName = rootProperty.getPackageName();
         fragmentClazzs = rootProperty.getFragmentClazzs() == null || rootProperty.getFragmentClazzs().length <= 0 ? fragmentClazzs : rootProperty.getFragmentClazzs();
         // 对fragmentClazzs做二次处理--> 将权限fragment加载进集合中
         fragmentClazzs = putInnerFragmentIn();

@@ -37,16 +37,12 @@ public class RootHelper {
      * @param duration 时长
      */
     private static void show(Context context, String tip, int duration) {
-        if (duration == 0) {
-            duration = 2000;
-        }
         String threadName = Thread.currentThread().getName();
         if (threadName.equalsIgnoreCase("main")) {
-            Toast.makeText(context, tip, duration).show();
+            Toast.makeText(context, tip, Toast.LENGTH_LONG).show();
         } else {
             Activity activity = (Activity) context;
-            int finalDuration = duration;
-            activity.runOnUiThread(() -> Toast.makeText(activity, tip, finalDuration).show());
+            activity.runOnUiThread(() -> Toast.makeText(activity, tip, Toast.LENGTH_LONG).show());
         }
     }
 

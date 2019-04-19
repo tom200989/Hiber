@@ -52,4 +52,7 @@ dependencies {
     // multiDex分包处理
     //noinspection GradleDependency
     api 'com.android.support:multidex:1.0.1'
+    
+    // 开发规范检查
+    api(name: 'ma_lint3_4', ext: 'aar')
 }

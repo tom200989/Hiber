@@ -22,5 +22,7 @@
     <string name="STANDARD_TIP">当前activity没有设置为standard模式\n请务必设置</string>
     <string name="NULL_TIP">使用 [toFragActivity] 方法必须要求\ncurrent,targetAC, target不能为null</string>
     <string name="SKIPBEAN_TIP">请确保传输的数据格式为Skipbean对象\n可以使用RootMAActivity:createSkipbean()生成传输对象</string>
+    <string name="PACKAGE_NAME_NOT_MATCH">包名不正确</string>
+    <string name="PACKAGE_NAME_NOT_SET">RootProperty没有设置包名</string>
     
 </resources>

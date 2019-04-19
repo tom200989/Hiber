@@ -58,6 +58,19 @@ public class RootProperty {
     private int containId;
 
     /**
+     * 包名
+     */
+    private String packageName;
+
+    public String getPackageName() {
+        return packageName;
+    }
+
+    public void setPackageName(String packageName) {
+        this.packageName = packageName;
+    }
+
+    /**
      * 当前是否全屏
      * @return 当前是否全屏
      */

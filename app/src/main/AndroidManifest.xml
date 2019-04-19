@@ -7,15 +7,22 @@
 
         <!-- 异常Activity -->
         <activity
-            android:launchMode="singleTask"
             android:name="com.hiber.ui.ActivityNotFound"
+            android:launchMode="singleTask"
             android:screenOrientation="portrait">
         </activity>
 
         <!-- 默认Activity -->
         <activity
-            android:launchMode="singleTask"
             android:name="com.hiber.ui.HiberActivity"
+            android:launchMode="singleTask"
+            android:screenOrientation="portrait">
+        </activity>
+
+        <!-- lint Activity -->
+        <activity
+            android:name="com.hiber.ui.LintActivity"
+            android:launchMode="singleTask"
             android:screenOrientation="portrait">
         </activity>
     </application>
