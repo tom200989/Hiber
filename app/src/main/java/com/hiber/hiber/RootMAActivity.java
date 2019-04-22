@@ -110,6 +110,11 @@ public abstract class RootMAActivity extends FragmentActivity {
      */
     protected static String INTENT_NAME = "SkipBean";
 
+    /**
+     * lint检查开关 ( T: 打开lint检查, 默认true)
+     */
+    private boolean isLintCheck = true;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -131,7 +136,7 @@ public abstract class RootMAActivity extends FragmentActivity {
                     }
 
                     // 4.android 运行版本在 [android 9.0 P] 以下才做规范判断
-                    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.P) {
+                    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.P & isLintCheck) {
                         // 4.1.包名检查
                         if (!packageCheck(packageName)) {
                             toast(R.string.PACKAGE_NAME_NOT_MATCH, 5000);
@@ -185,10 +190,11 @@ public abstract class RootMAActivity extends FragmentActivity {
             toast(getString(R.string.PACKAGE_NAME_NOT_SET), 5000);
             return false;
         }
+        // 此处不能使用getPackageName(), 因为在其他module下, 使用getPackageName()获取到的包名永远都是application的包名
         if (!Objects.requireNonNull(getClass().getPackage()).getName().startsWith(packageName)) {
             toast(getString(R.string.PACKAGE_NAME_NOT_MATCH), 5000);
             return false;
-        }
+        };
         return true;
     }
 

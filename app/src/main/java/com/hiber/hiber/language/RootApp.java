@@ -18,6 +18,7 @@ public class RootApp extends MultiDexApplication {
      * Activity统一管理集合
      */
     public static List<Activity> activities = new ArrayList<>();
+    public static String TAG = "RootApp";
 
     @Override
     public void onCreate() {
