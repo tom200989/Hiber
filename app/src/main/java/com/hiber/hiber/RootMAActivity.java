@@ -159,6 +159,8 @@ public abstract class RootMAActivity extends FragmentActivity {
                     StatusBarCompat.setStatusBarColor(this, getResources().getColor(colorStatusBar), false);
                     // 7.处理从其他组件传递过来的数据
                     handleIntentExtra(getIntent());
+                    // 8.视图填充完毕
+                    initViewFinish(layoutId);
 
                 } else {// 属性对象为空
                     String proErr = getString(R.string.ROOT_PROPERTY_ERR);
@@ -180,6 +182,15 @@ public abstract class RootMAActivity extends FragmentActivity {
     }
 
     /**
+     * 视图填充完毕
+     *
+     * @param layoutId 视图ID
+     */
+    public void initViewFinish(int layoutId) {
+
+    }
+
+    /**
      * 包名检查
      *
      * @param packageName 包名
@@ -194,7 +205,7 @@ public abstract class RootMAActivity extends FragmentActivity {
         if (!Objects.requireNonNull(getClass().getPackage()).getName().startsWith(packageName)) {
             toast(getString(R.string.PACKAGE_NAME_NOT_MATCH), 5000);
             return false;
-        };
+        }
         return true;
     }
 
