@@ -24,5 +24,9 @@
     <string name="SKIPBEAN_TIP">请确保传输的数据格式为Skipbean对象\n可以使用RootMAActivity:createSkipbean()生成传输对象</string>
     <string name="PACKAGE_NAME_NOT_MATCH">包名不正确</string>
     <string name="PACKAGE_NAME_NOT_SET">RootProperty没有设置包名</string>
-    
+    <string name="ATTACH_NOT_SERILIZABLE">传送的附件对象:[%s]没有实现序列化接口</string>
+    <string name="EVENT_BUS_CLASS_IS_NULL">你的Eventbus指定类型为空</string>
+    <string name="EVENT_BUS_LISTENER_IS_NULL">你的Eventbus指定监听器为空</string>
+    <string name="EVENT_BUS_DOES_NOT_REGISTER">你的Eventbus尚未注册\n请在Activity:onResume()之后或者Fragment:onNexts()之后使用</string>
+
 </resources>

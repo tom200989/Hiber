@@ -1,10 +1,12 @@
 package com.hiber.bean;
 
+import java.io.Serializable;
+
 /*
  * Created by qianli.ma on 2019/2/20 0020.
  * 权限对话框的默认显示实体
  */
-public class StringBean {
+public class StringBean implements Serializable {
 
     private String title;// 标题
     private String content;// 描述内容

@@ -1,5 +1,6 @@
 package com.hiber.hiber;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
@@ -8,6 +9,9 @@ import android.widget.Toast;
 
 import com.hiber.bean.SkipBean;
 import com.hiber.tools.Lgg;
+
+import java.util.Timer;
+import java.util.TimerTask;
 
 /**
  * Created by qianli.ma on 2018/7/24 0024.
@@ -36,14 +40,38 @@ public class RootHelper {
      * @param tip      提示
      * @param duration 时长
      */
+    @SuppressLint("ShowToast")
     private static void show(Context context, String tip, int duration) {
         String threadName = Thread.currentThread().getName();
         if (threadName.equalsIgnoreCase("main")) {
-            Toast.makeText(context, tip, Toast.LENGTH_LONG).show();
+            setToastDuration(Toast.makeText(context, tip, Toast.LENGTH_LONG), duration);
         } else {
             Activity activity = (Activity) context;
-            activity.runOnUiThread(() -> Toast.makeText(activity, tip, Toast.LENGTH_LONG).show());
+            activity.runOnUiThread(() -> setToastDuration(Toast.makeText(activity, tip, Toast.LENGTH_LONG), duration));
         }
+    }
+
+    /**
+     * 开启时长
+     *
+     * @param toast    吐司
+     * @param duration 时长
+     */
+    private static void setToastDuration(Toast toast, int duration) {
+        final Timer timer = new Timer();
+        timer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                toast.show();
+            }
+        }, 0, 2000);
+        new Timer().schedule(new TimerTask() {
+            @Override
+            public void run() {
+                toast.cancel();
+                timer.cancel();
+            }
+        }, duration);
     }
 
     /**

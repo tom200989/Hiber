@@ -1,7 +1,9 @@
 package com.hiber.hiber;
 
 import android.app.Activity;
+import android.app.ActivityManager;
 import android.app.Application;
+import android.content.Context;
 import android.os.Bundle;
 
 import com.hiber.cons.Cons;
@@ -89,6 +91,24 @@ public class ActivityHelper implements Application.ActivityLifecycleCallbacks {
     }
 
     /* -------------------------------------------- public -------------------------------------------- */
+
+    /**
+     * 判断ac位于视窗栈顶
+     *
+     * @param context 域
+     * @param acName  activity绝对路径
+     * @return T:位于栈顶
+     */
+    protected static boolean isTopActivity(Context context, String acName) {
+        ActivityManager activityManager = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
+        List<ActivityManager.RunningTaskInfo> tasks = activityManager.getRunningTasks(100);
+        for (ActivityManager.RunningTaskInfo task : tasks) {
+            if (task.topActivity.getClassName().equalsIgnoreCase(acName)) {
+                return true;
+            }
+        }
+        return false;
+    }
 
     /**
      * 杀死除共有部分的MainActivity外的Activity

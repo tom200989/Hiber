@@ -3,9 +3,10 @@ package com.hiber.bean;
  * Created by qianli.ma on 2018/8/1 0001.
  */
 
+import java.io.Serializable;
 import java.util.Arrays;
 
-public class RootProperty {
+public class RootProperty implements Serializable {
 
     /**
      * 是否设置为全屏

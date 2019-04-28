@@ -2,10 +2,12 @@ package com.hiber.bean;
 
 import android.view.View;
 
+import java.io.Serializable;
+
 /*
  * Created by qianli.ma on 2019/2/21 0021.
  */
-public class PermissBean {
+public class PermissBean implements Serializable {
     
     private View permissView;// 自定义视图
     private StringBean stringBean;// 默认情况下的字符内容对象

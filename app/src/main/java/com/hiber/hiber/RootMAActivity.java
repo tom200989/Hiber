@@ -20,6 +20,7 @@ import com.hiber.bean.RootProperty;
 import com.hiber.bean.SkipBean;
 import com.hiber.cons.Cons;
 import com.hiber.hiber.language.LangHelper;
+import com.hiber.impl.RootEventListener;
 import com.hiber.tools.Lgg;
 import com.hiber.tools.backhandler.BackHandlerHelper;
 import com.hiber.tools.barcompat.StatusBarCompat;
@@ -29,6 +30,8 @@ import com.hiber.ui.PermissFragment;
 import com.lintcheck.lintcheck.helper.LintHelper;
 
 import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 
 import java.io.Serializable;
 import java.lang.reflect.Method;
@@ -37,6 +40,8 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
+
+import butterknife.ButterKnife;
 
 /*
  * Created by qianli.ma on 2018/6/20 0020.
@@ -115,6 +120,16 @@ public abstract class RootMAActivity extends FragmentActivity {
      */
     private boolean isLintCheck = true;
 
+    /**
+     * Eventbus 泛型字节码集合
+     */
+    protected List<Class> eventClazzs = new ArrayList<>();
+
+    /**
+     * Eventbus 数据回调监听器集合
+     */
+    protected List<RootEventListener> eventListeners = new ArrayList<>();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -155,12 +170,16 @@ public abstract class RootMAActivity extends FragmentActivity {
 
                     // 5.填充视图
                     setContentView(layoutId);
-                    // 6.设置状态栏颜色
+                    // 6.绑定butterknife
+                    ButterKnife.bind(this);
+                    // 7.设置状态栏颜色
                     StatusBarCompat.setStatusBarColor(this, getResources().getColor(colorStatusBar), false);
-                    // 7.处理从其他组件传递过来的数据
+                    // 8.处理从其他组件传递过来的数据
                     handleIntentExtra(getIntent());
-                    // 8.视图填充完毕
+                    // 9.视图填充完毕
                     initViewFinish(layoutId);
+                    // 10.注册Activity的Eventbus
+                    EventBus.getDefault().register(this);
 
                 } else {// 属性对象为空
                     String proErr = getString(R.string.ROOT_PROPERTY_ERR);
@@ -178,6 +197,78 @@ public abstract class RootMAActivity extends FragmentActivity {
             String err = getString(R.string.INIT_ERR);
             toast(err, 5000);
             Lgg.t(TAG).ee(err);
+        }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (!EventBus.getDefault().isRegistered(this)) {
+            EventBus.getDefault().register(this);
+        }
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        if (EventBus.getDefault().isRegistered(this)) {
+            EventBus.getDefault().unregister(this);
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        clearEvents();
+    }
+
+    /**
+     * 接收自定义的Eventbus数据
+     *
+     * @param object 多元化数据
+     */
+    @Subscribe(threadMode = ThreadMode.MAIN, sticky = true)
+    public void onRootEvent(Object object) {
+        if (!(object instanceof FragBean)) {
+            getDataHandler(object);
+        }
+    }
+
+    /**
+     * 接收到Eventbus之后的处理
+     *
+     * @param object 泛型对象
+     */
+    protected void getDataHandler(Object object) {
+        // 1.检测集合是否为空
+        if (eventClazzs != null & eventListeners != null) {
+            // 2.检测用户是否需要监听回调
+            if (eventClazzs.size() > 0 & eventListeners.size() > 0) {
+                for (int i = 0; i < eventClazzs.size(); i++) {
+                    // 3.获取到外部指定的泛型
+                    Class eventClazz = eventClazzs.get(i);
+                    // 4.判断Eventbus接收到的数据是否符合用户传递的类型
+                    if (eventClazz.isAssignableFrom(object.getClass())) {
+                        // 5.获取监听器
+                        RootEventListener listener = eventListeners.get(i);
+                        if (listener != null) {
+                            // 6.用户是否指定了［仅仅作用域当前界面］的条件
+                            if (listener.isCurrentPageEffectOnly()) {/* 指定当前页面才起作用 */
+                                // 6.1.检测［当前屏幕的页面］是否等于［接收数据的页面］
+                                if (ActivityHelper.isTopActivity(this, getClass().getName())) {
+                                    // 6.2.移除stick包
+                                    EventBus.getDefault().removeStickyEvent(object);
+                                    // 6.3.将数据回调到外部
+                                    listener.getData(object);
+                                }
+                            } else {/* 不指定当前页面才起作用--> 即全部注册的页面均发生作用 */
+                                EventBus.getDefault().removeStickyEvent(object);
+                                listener.getData(object);
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 
@@ -241,7 +332,7 @@ public abstract class RootMAActivity extends FragmentActivity {
                 return;
             }
 
-            // 1.正常获取到skipbean
+            // 1.正常获取到skipbean并检测attach是否实现了序列化
             SkipBean skipBean = (SkipBean) extra;
             // 2.判断是否为自身AC
             String currentActivityClassName = getClass().getName();
@@ -273,7 +364,7 @@ public abstract class RootMAActivity extends FragmentActivity {
     @SuppressWarnings("unchecked")// 消除「method.invoke(packageManager, getPackageName()」的警告
     private boolean checkActionCategory() {
 
-        // 如果是小于Android 6.0, 则不能使用反射, PackageManager没有对应的API
+        // 如果是小于Android 6.0或者大于android 8.0, 则不能使用反射, PackageManager没有对应的API
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M | Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
             StringBuilder builder = new StringBuilder();
             builder.append("根据Android规定, 在Android >= P之后不能使用反射机制获取IntentFilters");
@@ -517,10 +608,61 @@ public abstract class RootMAActivity extends FragmentActivity {
         return fragBean;
     }
 
+    /**
+     * 封装skipbean
+     *
+     * @param current        当前的fragment
+     * @param activityClass  目标Activity的action
+     * @param target         目标Fragment
+     * @param attach         附件
+     * @param isTargetReload 是否重载对象Fragment
+     * @param isFinish       是否结束当前Activity
+     * @return skipbean
+     */
+    private SkipBean getSkipbean(Class current, Class activityClass, Class target, Object attach, boolean isTargetReload, boolean isFinish) {
+        SkipBean skipBean = new SkipBean();
+
+        boolean isCurrentFrag = Fragment.class.isAssignableFrom(current);
+        boolean isTargetFrag = Fragment.class.isAssignableFrom(target);
+        if (isCurrentFrag & isTargetFrag) {
+            skipBean.setCurrentFragmentClassName(current.getName());
+            skipBean.setTargetFragmentClassName(target.getName());
+
+        } else if (isCurrentFrag & !isTargetFrag) {
+            skipBean.setCurrentFragmentClassName(current.getName());
+            skipBean.setTargetFragmentClassName(current.getName());
+
+        } else if (!isCurrentFrag & isTargetFrag) {
+            skipBean.setCurrentFragmentClassName(getClass().getName());
+            skipBean.setTargetFragmentClassName(target.getName());
+
+        } else {
+            skipBean.setCurrentFragmentClassName(getClass().getName());
+            skipBean.setTargetFragmentClassName(getClass().getName());
+
+        }
+
+        skipBean.setTargetActivityClassName(activityClass.getName());
+        skipBean.setAttach(attach);
+        skipBean.setTargetReload(isTargetReload);
+        skipBean.setCurrentACFinish(isFinish);
+        return skipBean;
+    }
+
+    /**
+     * 清空关于Eventbus的集合
+     */
+    private void clearEvents() {
+        eventClazzs.clear();
+        eventListeners.clear();
+        eventListeners = null;
+        eventClazzs = null;
+    }
+
     /* -------------------------------------------- public method -------------------------------------------- */
 
     /**
-     * 跳转到别的fragment
+     * 同module + 同Activity: 普通跳转
      *
      * @param classWhichFragmentStart 当前
      * @param targetFragmentClass     目标
@@ -528,6 +670,21 @@ public abstract class RootMAActivity extends FragmentActivity {
      * @param isTargetReload          是否重载视图
      */
     public void toFrag(Class classWhichFragmentStart, Class targetFragmentClass, Object attach, boolean isTargetReload) {
+        // 检测传输目标是否为空
+        if (classWhichFragmentStart == null | targetFragmentClass == null) {
+            toast(getString(R.string.NULL_TIP), 5000);
+            return;
+        }
+        // 检测附件是否实现序列化
+        if (attach != null) {
+            if (!(attach instanceof Serializable)) {
+                String string = getString(R.string.ATTACH_NOT_SERILIZABLE);
+                String format = String.format(string, attach.getClass().getSimpleName());
+                toast(format, 5000);
+                return;
+            }
+        }
+        RootFrag.whichFragmentStart = classWhichFragmentStart.getSimpleName();
         // 0.转换并封装传输对象
         FragBean fragBean = transferFragbean(classWhichFragmentStart, targetFragmentClass, attach);
         // 1.再传输(否则会出现nullPointException)
@@ -535,6 +692,186 @@ public abstract class RootMAActivity extends FragmentActivity {
         // 2.先跳转
         fraHelpers.transfer(fragBean.getTargetFragmentClass(), isTargetReload);
         EventBus.getDefault().postSticky(fragBean);
+    }
+
+    /**
+     * 同module + 同Activity: 普通跳转(延迟)
+     *
+     * @param current        当前
+     * @param target         目标
+     * @param attach         附带
+     * @param isTargetReload 是否重载视图
+     * @param delayMilis     延迟毫秒数
+     */
+    public void toFrag(Class current, Class target, Object attach, boolean isTargetReload, int delayMilis) {
+        Thread ta = new Thread(() -> {
+            try {
+                Thread.sleep(delayMilis);
+                runOnUiThread(() -> toFrag(current, target, attach, isTargetReload));
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+                Lgg.t(Cons.TAG).ee("RootMAActivity error: " + e.getMessage());
+            }
+        });
+        ta.start();
+    }
+
+    /**
+     * 同module + 不同Activity 跳转
+     *
+     * @param current        当前的fragment
+     * @param targetAC       目标Activity
+     * @param target         目标fragment
+     * @param attach         附件
+     * @param isTargetReload 是否重载目标fragment
+     */
+    public void toFragActivity(Class current, Class targetAC, Class target, Object attach, boolean isTargetReload) {
+        // 检测传输目标是否为空
+        if (current == null | targetAC == null | target == null) {
+            toast(getString(R.string.NULL_TIP), 5000);
+            return;
+        }
+        // 检测附件是否实现序列化
+        if (attach != null) {
+            if (!(attach instanceof Serializable)) {
+                String string = getString(R.string.ATTACH_NOT_SERILIZABLE);
+                String format = String.format(string, attach.getClass().getSimpleName());
+                toast(format, 5000);
+                return;
+            }
+        }
+        SkipBean skipbean = getSkipbean(current, targetAC, target, attach, isTargetReload, false);
+        RootHelper.toActivityImplicit(this, skipbean.getTargetActivityClassName(), false, false, false, 0, skipbean);
+    }
+
+    /**
+     * 同module + 不同Activity 跳转(带延时和自定义结束当前)
+     *
+     * @param current        当前的fragment
+     * @param targetAC       目标Activity
+     * @param target         目标fragment
+     * @param attach         附件
+     * @param isTargetReload 是否重载目标fragment
+     * @param isFinish       是否结束当前AC
+     * @param delay          延迟毫秒数
+     */
+    public void toFragActivity(Class current, Class targetAC, Class target, Object attach, boolean isTargetReload, boolean isFinish, int delay) {
+        // 检测传输目标是否为空
+        if (current == null | targetAC == null | target == null) {
+            toast(getString(R.string.NULL_TIP), 5000);
+            return;
+        }
+        // 检测附件是否实现序列化
+        if (attach != null) {
+            if (!(attach instanceof Serializable)) {
+                String string = getString(R.string.ATTACH_NOT_SERILIZABLE);
+                String format = String.format(string, attach.getClass().getSimpleName());
+                toast(format, 5000);
+                return;
+            }
+        }
+        SkipBean skipbean = getSkipbean(current, targetAC, target, attach, isTargetReload, isFinish);
+        RootHelper.toActivityImplicit(this, skipbean.getTargetActivityClassName(), false, isFinish, false, delay, skipbean);
+    }
+
+    /**
+     * 不同module + 不同Activity 跳转
+     *
+     * @param current        当前的fragment
+     * @param activityClass  目标Activity的action
+     * @param target         目标fragment
+     * @param attach         附件
+     * @param isTargetReload 是否重载目标fragment
+     */
+    public void toFragModule(Class current, String activityClass, String target, Object attach, boolean isTargetReload) {
+        // 检测传输目标是否为空
+        if (current == null | activityClass == null | target == null) {
+            toast(getString(R.string.NULL_TIP), 5000);
+            return;
+        }
+        // 检测附件是否实现序列化
+        if (attach != null) {
+            if (!(attach instanceof Serializable)) {
+                String string = getString(R.string.ATTACH_NOT_SERILIZABLE);
+                String format = String.format(string, attach.getClass().getSimpleName());
+                toast(format, 5000);
+                return;
+            }
+        }
+        SkipBean skipbean = new SkipBean();
+        skipbean.setCurrentFragmentClassName(current.getName());
+        skipbean.setTargetActivityClassName(activityClass);
+        skipbean.setTargetFragmentClassName(target);
+        skipbean.setAttach(attach);
+        skipbean.setTargetReload(isTargetReload);
+        skipbean.setCurrentACFinish(false);
+        RootHelper.toActivityImplicit(this, activityClass, false, false, false, 0, skipbean);
+    }
+
+    /**
+     * 不同module + 不同Activity 跳转 (带延时和自定义结束当前)
+     *
+     * @param current        当前的fragment
+     * @param activityClass  目标Activity的action
+     * @param target         目标fragment
+     * @param attach         附件
+     * @param isTargetReload 是否重载目标fragment
+     * @param isFinish       是否结束当前AC
+     * @param delay          延迟毫秒数
+     */
+    public void toFragModule(Class current, String activityClass, String target, Object attach, boolean isTargetReload, boolean isFinish, int delay) {
+        // 检测传输目标是否为空
+        if (current == null | activityClass == null | target == null) {
+            toast(getString(R.string.NULL_TIP), 5000);
+            return;
+        }
+        // 检测附件是否实现序列化
+        if (attach != null) {
+            if (!(attach instanceof Serializable)) {
+                String string = getString(R.string.ATTACH_NOT_SERILIZABLE);
+                String format = String.format(string, attach.getClass().getSimpleName());
+                toast(format, 5000);
+                return;
+            }
+        }
+        SkipBean skipbean = new SkipBean();
+        skipbean.setCurrentFragmentClassName(current.getName());
+        skipbean.setTargetActivityClassName(activityClass);
+        skipbean.setTargetFragmentClassName(target);
+        skipbean.setAttach(attach);
+        skipbean.setTargetReload(isTargetReload);
+        skipbean.setCurrentACFinish(false);
+        RootHelper.toActivityImplicit(this, activityClass, false, isFinish, false, delay, skipbean);
+    }
+
+    /**
+     * 设置Eventbus数据接收监听器
+     *
+     * @param clazz             数据类型, 如 XXX.class
+     * @param rootEventListener 数据回调监听器
+     * @param <T>               泛型
+     */
+    public <T> void setEventListener(Class<T> clazz, RootEventListener<T> rootEventListener) {
+        if (clazz != null && rootEventListener != null) {
+            eventClazzs.add(clazz);
+            eventListeners.add(rootEventListener);
+        } else {
+            if (clazz == null) {
+                toast(R.string.EVENT_BUS_CLASS_IS_NULL, 5000);
+            } else {
+                toast(R.string.EVENT_BUS_LISTENER_IS_NULL, 5000);
+            }
+        }
+    }
+
+    /**
+     * 发送Eventbus事件
+     *
+     * @param obj     数据
+     * @param isStick T:粘性
+     */
+    public void sendEvent(Object obj, boolean isStick) {
+        RootEvent.sendEvent(obj, isStick);
     }
 
     /**

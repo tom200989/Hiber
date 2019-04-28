@@ -23,6 +23,7 @@ import com.hiber.bean.SkipBean;
 import com.hiber.bean.StringBean;
 import com.hiber.cons.Cons;
 import com.hiber.impl.PermissedListener;
+import com.hiber.impl.RootEventListener;
 import com.hiber.tools.Lgg;
 import com.hiber.tools.backhandler.FragmentBackHandler;
 import com.hiber.ui.PermissFragment;
@@ -62,7 +63,7 @@ public abstract class RootFrag extends Fragment implements FragmentBackHandler {
     public Unbinder unbinder;
     private View inflateView;
     private int layoutId;
-    private static String whichFragmentStart;
+    protected static String whichFragmentStart;
 
     // 权限相关
     private int permissedCode = 0x101;
@@ -76,6 +77,16 @@ public abstract class RootFrag extends Fragment implements FragmentBackHandler {
     private View permissView;// 权限自定义制图
     private StringBean stringBean;// 权限默认字符内容
     private PermissBean permissbean;
+
+    /**
+     * Eventbus 泛型字节码集合
+     */
+    protected List<Class> eventClazzs = new ArrayList<>();
+
+    /**
+     * Eventbus 数据回调监听器集合
+     */
+    protected List<RootEventListener> eventListeners = new ArrayList<>();
 
     @Override
     public void onAttach(Context context) {
@@ -101,6 +112,56 @@ public abstract class RootFrag extends Fragment implements FragmentBackHandler {
         initPermissedActionMap(initPermisseds);
         Lgg.t(Cons.TAG).vv("Method--> " + getClass().getSimpleName() + ":return inflateView & init permissed");
         return inflateView;
+    }
+
+    /**
+     * 接收自定义的Eventbus数据
+     *
+     * @param object 多元化数据
+     */
+    @Subscribe(threadMode = ThreadMode.MAIN, sticky = true)
+    public void onRootEvent(Object object) {
+        if (!(object instanceof FragBean)) {
+            getDataHandler(object);
+        }
+    }
+
+    /**
+     * 接收到Eventbus之后的处理
+     *
+     * @param object 泛型对象
+     */
+    protected void getDataHandler(Object object) {
+        // 1.检测集合是否为空
+        if (eventClazzs != null & eventListeners != null) {
+            // 2.检测用户是否需要监听回调
+            if (eventClazzs.size() > 0 & eventListeners.size() > 0) {
+                for (int i = 0; i < eventClazzs.size(); i++) {
+                    // 3.获取到外部指定的泛型
+                    Class eventClazz = eventClazzs.get(i);
+                    // 4.判断Eventbus接收到的数据是否符合用户传递的类型
+                    if (eventClazz.isAssignableFrom(object.getClass())) {
+                        // 5.获取监听器
+                        RootEventListener listener = eventListeners.get(i);
+                        if (listener != null) {
+                            // 6.用户是否指定了［仅仅作用域当前界面］的条件
+                            if (listener.isCurrentPageEffectOnly()) {/* 指定当前页面才起作用 */
+                                // 6.1.检测［当前屏幕的页面］是否等于［接收数据的页面］
+                                if (!isHidden()) {
+                                    // 6.2.移除stick包
+                                    EventBus.getDefault().removeStickyEvent(object);
+                                    // 6.3.将数据回调到外部
+                                    listener.getData(object);
+                                }
+                            } else {/* 不指定当前页面才起作用--> 即全部注册的页面均发生作用 */
+                                EventBus.getDefault().removeStickyEvent(object);
+                                listener.getData(object);
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 
     /**
@@ -406,6 +467,36 @@ public abstract class RootFrag extends Fragment implements FragmentBackHandler {
     /* -------------------------------------------- public -------------------------------------------- */
 
     /**
+     * 发送Eventbus事件
+     *
+     * @param obj     数据
+     * @param isStick T:粘性
+     */
+    public void sendEvent(Object obj, boolean isStick) {
+        ((RootMAActivity) activity).sendEvent(obj, isStick);
+    }
+
+    /**
+     * 设置Eventbus数据接收监听器
+     *
+     * @param clazz             数据类型, 如 XXX.class
+     * @param rootEventListener 数据回调监听器
+     * @param <T>               泛型
+     */
+    public <T> void setEventListener(Class<T> clazz, RootEventListener<T> rootEventListener) {
+        if (clazz != null && rootEventListener != null) {
+            eventClazzs.add(clazz);
+            eventListeners.add(rootEventListener);
+        } else {
+            if (clazz == null) {
+                toast(R.string.EVENT_BUS_CLASS_IS_NULL, 5000);
+            } else {
+                toast(R.string.EVENT_BUS_LISTENER_IS_NULL, 5000);
+            }
+        }
+    }
+
+    /**
      * 点击申请权限
      *
      * @param permissions 需要申请的权限组
@@ -445,21 +536,11 @@ public abstract class RootFrag extends Fragment implements FragmentBackHandler {
      * @param isTargetReload 是否重载视图
      */
     public void toFrag(Class current, Class target, Object attach, boolean isTargetReload) {
-        if (current == null | target == null) {
-            toast(activity.getString(R.string.NULL_TIP), 5000);
-            return;
-        }
-        try {
-            RootMAActivity activity = (RootMAActivity) getActivity();
-            if (activity != null) {
-                whichFragmentStart = current.getSimpleName();
-                activity.toFrag(current, target, attach, isTargetReload);
-            } else {
-                Lgg.t(Cons.TAG).ee("RootHiber--> toFrag() error: RootMAActivity is null");
-            }
-        } catch (Exception e) {
-            Lgg.t(Cons.TAG).ee("Rootfrag error: " + e.getMessage());
-            e.printStackTrace();
+        RootMAActivity activity = (RootMAActivity) getActivity();
+        if (activity != null) {
+            activity.toFrag(current, target, attach, isTargetReload);
+        } else {
+            Lgg.t(Cons.TAG).ee("RootFrag--> toFrag() error: RootMAActivity is null");
         }
     }
 
@@ -473,30 +554,11 @@ public abstract class RootFrag extends Fragment implements FragmentBackHandler {
      * @param delayMilis     延迟毫秒数
      */
     public void toFrag(Class current, Class target, Object attach, boolean isTargetReload, int delayMilis) {
-        if (current == null | target == null) {
-            toast(activity.getString(R.string.NULL_TIP), 5000);
-            return;
-        }
-        try {
-            RootMAActivity activity = (RootMAActivity) getActivity();
-            if (activity != null) {
-                Thread ta = new Thread(() -> {
-                    try {
-                        Thread.sleep(delayMilis);
-                        whichFragmentStart = current.getSimpleName();
-                        activity.runOnUiThread(() -> activity.toFrag(current, target, attach, isTargetReload));
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                });
-                ta.start();
-
-            } else {
-                Lgg.t(Cons.TAG).ee("RootHiber--> toFrag() error: RootMAActivity is null");
-            }
-        } catch (Exception e) {
-            Lgg.t(Cons.TAG).ee("Rootfrag error: " + e.getMessage());
-            e.printStackTrace();
+        RootMAActivity activity = (RootMAActivity) getActivity();
+        if (activity != null) {
+            activity.toFrag(current, target, attach, isTargetReload, delayMilis);
+        } else {
+            Lgg.t(Cons.TAG).ee("RootHiber--> toFrag() error: RootMAActivity is null");
         }
     }
 
@@ -510,12 +572,13 @@ public abstract class RootFrag extends Fragment implements FragmentBackHandler {
      * @param isTargetReload 是否重载目标fragment
      */
     public void toFragActivity(Class current, Class targetAC, Class target, Object attach, boolean isTargetReload) {
-        if (current == null | targetAC == null | target == null) {
-            toast(activity.getString(R.string.NULL_TIP), 5000);
-            return;
+
+        RootMAActivity rootMAActivity = (RootMAActivity) activity;
+        if (rootMAActivity != null) {
+            rootMAActivity.toFragActivity(current, targetAC, target, attach, isTargetReload);
+        } else {
+            Lgg.t(Cons.TAG).ee("Rootfrag--> toFragActivity() error: RootMAActivity is null");
         }
-        SkipBean skipbean = getSkipbean(current, targetAC, target, attach, isTargetReload, false);
-        RootHelper.toActivityImplicit(activity, skipbean.getTargetActivityClassName(), false, false, false, 0, skipbean);
     }
 
     /**
@@ -530,12 +593,12 @@ public abstract class RootFrag extends Fragment implements FragmentBackHandler {
      * @param delay          延迟毫秒数
      */
     public void toFragActivity(Class current, Class targetAC, Class target, Object attach, boolean isTargetReload, boolean isFinish, int delay) {
-        if (current == null | targetAC == null | target == null) {
-            toast(activity.getString(R.string.NULL_TIP), 5000);
-            return;
+        RootMAActivity rootMAActivity = (RootMAActivity) activity;
+        if (rootMAActivity != null) {
+            rootMAActivity.toFragActivity(current, targetAC, target, attach, isTargetReload, isFinish, delay);
+        } else {
+            Lgg.t(Cons.TAG).ee("Rootfrag--> toFragActivity() error: RootMAActivity is null");
         }
-        SkipBean skipbean = getSkipbean(current, targetAC, target, attach, isTargetReload, isFinish);
-        RootHelper.toActivityImplicit(activity, skipbean.getTargetActivityClassName(), false, isFinish, false, delay, skipbean);
     }
 
     /**
@@ -548,18 +611,12 @@ public abstract class RootFrag extends Fragment implements FragmentBackHandler {
      * @param isTargetReload 是否重载目标fragment
      */
     public void toFragModule(Class current, String activityClass, String target, Object attach, boolean isTargetReload) {
-        if (current == null | activityClass == null | target == null) {
-            toast(activity.getString(R.string.NULL_TIP), 5000);
-            return;
+        RootMAActivity rootMAActivity = (RootMAActivity) activity;
+        if (rootMAActivity != null) {
+            rootMAActivity.toFragModule(current, activityClass, target, attach, isTargetReload);
+        } else {
+            Lgg.t(Cons.TAG).ee("Rootfrag--> toFragActivity() error: RootMAActivity is null");
         }
-        SkipBean skipbean = new SkipBean();
-        skipbean.setCurrentFragmentClassName(current.getName());
-        skipbean.setTargetActivityClassName(activityClass);
-        skipbean.setTargetFragmentClassName(target);
-        skipbean.setAttach(attach);
-        skipbean.setTargetReload(isTargetReload);
-        skipbean.setCurrentACFinish(false);
-        RootHelper.toActivityImplicit(activity, activityClass, false, false, false, 0, skipbean);
     }
 
     /**
@@ -574,18 +631,12 @@ public abstract class RootFrag extends Fragment implements FragmentBackHandler {
      * @param delay          延迟毫秒数
      */
     public void toFragModule(Class current, String activityClass, String target, Object attach, boolean isTargetReload, boolean isFinish, int delay) {
-        if (current == null | activityClass == null | target == null) {
-            toast(activity.getString(R.string.NULL_TIP), 5000);
-            return;
+        RootMAActivity rootMAActivity = (RootMAActivity) activity;
+        if (rootMAActivity != null) {
+            rootMAActivity.toFragModule(current, activityClass, target, attach, isTargetReload, isFinish, delay);
+        } else {
+            Lgg.t(Cons.TAG).ee("Rootfrag--> toFragActivity() error: RootMAActivity is null");
         }
-        SkipBean skipbean = new SkipBean();
-        skipbean.setCurrentFragmentClassName(current.getName());
-        skipbean.setTargetActivityClassName(activityClass);
-        skipbean.setTargetFragmentClassName(target);
-        skipbean.setAttach(attach);
-        skipbean.setTargetReload(isTargetReload);
-        skipbean.setCurrentACFinish(false);
-        RootHelper.toActivityImplicit(activity, activityClass, false, isFinish, false, delay, skipbean);
     }
 
     /**
