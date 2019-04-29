@@ -60,7 +60,7 @@ public abstract class RootFrag extends Fragment implements FragmentBackHandler {
 
     private static final String TAG = "RootFrag";
     public FragmentActivity activity;
-    public Unbinder unbinder;
+    private Unbinder unbinder;
     private View inflateView;
     private int layoutId;
     protected static String whichFragmentStart;

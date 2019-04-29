@@ -13,11 +13,11 @@ public abstract class RootEventListener<T> {
     public abstract void getData(T t);
 
     /**
-     * 是否仅仅作用于当前页面
+     * 是否仅仅作用于当前页面(默认仅限当前界面接收)
      *
      * @return Ture: 仅仅作用于当前页面
      */
     public boolean isCurrentPageEffectOnly() {
-        return false;
+        return true;
     }
 }
