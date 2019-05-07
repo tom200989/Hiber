@@ -6,10 +6,12 @@ import android.view.View;
 import com.hiber.bean.StringBean;
 import com.hiber.impl.PermissedListener;
 
+import java.io.Serializable;
+
 /*
  * Created by qianli.ma on 2019/3/4 0004.
  */
-public class PermissInnerBean {
+public class PermissInnerBean implements Serializable {
 
     /**
      * 被拒绝的权限组
