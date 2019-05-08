@@ -212,9 +212,11 @@ public abstract class RootFrag extends Fragment implements FragmentBackHandler {
         } else {
             // 点击申请权限全部通过--> 接口回调
             if (permissedListener != null && clickPermisseds != null) {
+                // TOAT: 此处先清空权限集合是为了处理［开发人员在监听回调中再次设置权限监听的情况］
+                clickPermisseds = null;// 防止重新进入该页面重复执行业务逻辑
                 // 点击权限全部通过--> 执行你的业务逻辑（如启动照相机）
                 permissedListener.permissionResult(true, null);
-                clickPermisseds = null;// 防止重新进入该页面重复执行业务逻辑
+                
             }
         }
     }
@@ -511,10 +513,12 @@ public abstract class RootFrag extends Fragment implements FragmentBackHandler {
             requestPermissions(clickPermisseds, permissedCode);
         } else {
             Lgg.t(Cons.TAG).vv("Method--> " + getClass().getSimpleName() + ":no need to request permissed");
+            // TOAT: 此处先清空权限集合是为了处理［开发人员在监听回调中再次设置权限监听的情况］
+            clickPermisseds = null;
             if (permissedListener != null) {
                 permissedListener.permissionResult(true, null);
             }
-            clickPermisseds = null;
+            
         }
     }
 
