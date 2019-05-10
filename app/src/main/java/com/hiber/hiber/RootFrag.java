@@ -409,6 +409,14 @@ public abstract class RootFrag extends Fragment implements FragmentBackHandler {
     }
 
     @Override
+    public void onDestroy() {
+        // 解决跨module时, eventbus没有注销而导致从其他module返回时, 会被之前的eventbus重复响应的问题
+        // 因此在fragment彻底被销毁时, 需要把eventbus完全注销
+        EventBus.getDefault().unregister(this);
+        super.onDestroy();
+    }
+
+    @Override
     public boolean onBackPressed() {
         // 其他重写情况
         boolean isDispathcherBackPressed = onBackPresss();
