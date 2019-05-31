@@ -50,7 +50,7 @@ public class ActivityHelper implements Application.ActivityLifecycleCallbacks {
 
     @Override
     public void onActivityResumed(Activity activity) {
-
+        RootApp.TOP_ACTIVITY = activity;
     }
 
     @Override

@@ -19,6 +19,7 @@ public class RootApp extends MultiDexApplication {
      */
     public static List<Activity> activities = new ArrayList<>();
     public static String TAG = "RootApp";
+    public static Activity TOP_ACTIVITY;// 当前置顶的activity
 
     @Override
     public void onCreate() {
