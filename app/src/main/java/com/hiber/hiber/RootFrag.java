@@ -108,7 +108,8 @@ public abstract class RootFrag extends Fragment implements FragmentBackHandler {
         // 4.加载完视图后的操作--> 由子类重写
         initViewFinish(inflateView);
         // 5.初始化权限
-        initPermisseds = initPermissed();
+        String[] tempInitPermisseds = initPermissed();
+        initPermisseds = tempInitPermisseds == null ? new String[]{} : tempInitPermisseds;
         initPermissedActionMap(initPermisseds);
         Lgg.t(Cons.TAG).vv("Method--> " + getClass().getSimpleName() + ":return inflateView & init permissed");
         return inflateView;
@@ -175,7 +176,7 @@ public abstract class RootFrag extends Fragment implements FragmentBackHandler {
             permissedActionMap = new HashMap<>();
         }
         permissedActionMap.clear();
-        if (permisseds != null) {
+        if (permisseds != null && permisseds.length > 0) {
             for (String permission : permisseds) {
                 HashMap<String, Integer> map = new HashMap<>();
                 map.put(permission, PackageManager.PERMISSION_DENIED);
@@ -211,12 +212,12 @@ public abstract class RootFrag extends Fragment implements FragmentBackHandler {
             handlePermissed(true);
         } else {
             // 点击申请权限全部通过--> 接口回调
-            if (permissedListener != null && clickPermisseds != null) {
+            if (permissedListener != null && clickPermisseds != null && clickPermisseds.length > 0) {
                 // TOAT: 此处先清空权限集合是为了处理［开发人员在监听回调中再次设置权限监听的情况］
-                clickPermisseds = null;// 防止重新进入该页面重复执行业务逻辑
+                clickPermisseds = new String[]{};// 防止重新进入该页面重复执行业务逻辑
                 // 点击权限全部通过--> 执行你的业务逻辑（如启动照相机）
                 permissedListener.permissionResult(true, null);
-                
+
             }
         }
     }
@@ -231,8 +232,11 @@ public abstract class RootFrag extends Fragment implements FragmentBackHandler {
         // 如果用户在同意后到system setting做了取消操作，需要把权限状态更新一下
         Collection<Integer> values = permissedActionMap.values();
         if (values.contains(ACTION_DEFAULT)) {// 默认情况(初始化）--> 直接请求权限申请
-            requestPermissions(initPermisseds, permissedCode);
-            Lgg.t(Cons.TAG).vv("Method--> " + getClass().getSimpleName() + ":call system requestPermissions()");
+            if (initPermisseds != null && initPermisseds.length > 0) {
+                requestPermissions(initPermisseds, permissedCode);
+                Lgg.t(Cons.TAG).vv("Method--> " + getClass().getSimpleName() + ":call system requestPermissions()");
+            }
+
         } else {// 非默认情况（用户已通过系统框进行操作）--> 重新封装（记录拒绝的权限状态）
             Lgg.t(Cons.TAG).vv("Method--> " + getClass().getSimpleName() + ":user had click the permissed pop window");
             checkPermissedState(isClickPermissed ? clickPermisseds : initPermisseds);
@@ -252,7 +256,7 @@ public abstract class RootFrag extends Fragment implements FragmentBackHandler {
 
             // 点击申请情况--> 将点击权限设置为空
             if (isClickPermissed) {
-                clickPermisseds = null;
+                clickPermisseds = new String[]{};
             }
         }
     }
@@ -455,7 +459,7 @@ public abstract class RootFrag extends Fragment implements FragmentBackHandler {
      * @apiNote 重写
      */
     public String[] initPermissed() {
-        return null;
+        return new String[]{};
     }
 
     /**
@@ -513,20 +517,23 @@ public abstract class RootFrag extends Fragment implements FragmentBackHandler {
      */
     public void clickPermissed(String[] permissions) {
         Lgg.t(Cons.TAG).vv("Method--> " + getClass().getSimpleName() + ":clickPermissed()");
-        initPermisseds = null;// 1.该步防止初始化权限重复申请
-        clickPermisseds = permissions;
+        initPermisseds = new String[]{};// 1.该步防止初始化权限重复申请
+        clickPermisseds = permissions == null ? new String[]{} : permissions;
         if (isReqPermissed(clickPermisseds)) {// 2.点击权限申请
             Lgg.t(Cons.TAG).vv("Method--> " + getClass().getSimpleName() + ":to request permissed");
             initPermissedActionMap(clickPermisseds);
-            requestPermissions(clickPermisseds, permissedCode);
+            if (clickPermisseds != null && clickPermisseds.length > 0) {
+                requestPermissions(clickPermisseds, permissedCode);
+            }
+
         } else {
             Lgg.t(Cons.TAG).vv("Method--> " + getClass().getSimpleName() + ":no need to request permissed");
             // TOAT: 此处先清空权限集合是为了处理［开发人员在监听回调中再次设置权限监听的情况］
-            clickPermisseds = null;
+            clickPermisseds = new String[]{};
             if (permissedListener != null) {
                 permissedListener.permissionResult(true, null);
             }
-            
+
         }
     }
 
