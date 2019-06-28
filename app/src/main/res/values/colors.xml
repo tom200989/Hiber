@@ -3,4 +3,5 @@
     <color name="colorHiberPrimary">#3F51B5</color>
     <color name="colorHiberPrimaryDark">#303F9F</color>
     <color name="colorHiberAccent">#000000</color>
+    <color name="colorToast">#FFFFFF</color>
 </resources>

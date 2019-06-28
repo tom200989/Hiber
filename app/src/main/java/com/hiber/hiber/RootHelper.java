@@ -2,14 +2,22 @@ package com.hiber.hiber;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.app.AppOpsManager;
+import android.app.NotificationManager;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.ApplicationInfo;
+import android.os.Build;
 import android.os.Process;
 import android.widget.Toast;
 
 import com.hiber.bean.SkipBean;
 import com.hiber.tools.Lgg;
+import com.hiber.tools.ToastUtil;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -44,20 +52,30 @@ public class RootHelper {
     private static void show(Context context, String tip, int duration) {
         String threadName = Thread.currentThread().getName();
         if (threadName.equalsIgnoreCase("main")) {
-            setToastDuration(Toast.makeText(context, tip, Toast.LENGTH_LONG), duration);
+            if (isNotificationOpen(context)) {// 系统通知开启 -- 使用系统吐司
+                setToastSytem(Toast.makeText(context, tip, Toast.LENGTH_LONG), duration);
+            } else {// 否则使用自定义吐司
+                ToastUtil.showSelfToast((RootMAActivity) context,tip, duration);
+            }
         } else {
-            Activity activity = (Activity) context;
-            activity.runOnUiThread(() -> setToastDuration(Toast.makeText(activity, tip, Toast.LENGTH_LONG), duration));
+            RootMAActivity activity = (RootMAActivity) context;
+            activity.runOnUiThread(() -> {
+                if (isNotificationOpen(context)) {// 系统通知开启 -- 使用系统吐司
+                    setToastSytem(Toast.makeText(context, tip, Toast.LENGTH_LONG), duration);
+                } else {// 否则使用自定义吐司
+                    ToastUtil.showSelfToast((RootMAActivity) context,tip, duration);
+                }
+            });
         }
     }
 
     /**
-     * 开启时长
+     * 开启系统自带吐司并设置时长
      *
      * @param toast    吐司
      * @param duration 时长
      */
-    private static void setToastDuration(Toast toast, int duration) {
+    private static void setToastSytem(Toast toast, int duration) {
         final Timer timer = new Timer();
         timer.schedule(new TimerTask() {
             @Override
@@ -182,5 +200,31 @@ public class RootHelper {
         }).start();
     }
 
+    /**
+     * 检查通知有没有开启(T:开启)
+     */
+    private static boolean isNotificationOpen(Context context) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {// 7.0
+            return ((NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE)).areNotificationsEnabled();
+
+        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {// 4.4
+            AppOpsManager appOps = (AppOpsManager) context.getSystemService(Context.APP_OPS_SERVICE);
+            ApplicationInfo appInfo = context.getApplicationInfo();
+            String pkg = context.getApplicationContext().getPackageName();
+            int uid = appInfo.uid;
+
+            try {
+                Class<?> appOpsClass = Class.forName(AppOpsManager.class.getName());
+                Method checkOpNoThrowMethod = appOpsClass.getMethod("checkOpNoThrow", Integer.TYPE, Integer.TYPE, String.class);
+                Field opPostNotificationValue = appOpsClass.getDeclaredField("OP_POST_NOTIFICATION");
+                int value = (Integer) opPostNotificationValue.get(Integer.class);
+                return (Integer) checkOpNoThrowMethod.invoke(appOps, value, uid, pkg) == 0;
+            } catch (NoSuchMethodException | NoSuchFieldException | InvocationTargetException | IllegalAccessException | RuntimeException | ClassNotFoundException ignored) {
+                return true;
+            }
+        } else {
+            return true;
+        }
+    }
 
 }

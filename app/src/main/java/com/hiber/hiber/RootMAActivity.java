@@ -8,13 +8,19 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.StringRes;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.text.TextUtils;
+import android.util.TypedValue;
+import android.view.View;
+import android.view.ViewGroup;
 import android.view.Window;
+import android.widget.RelativeLayout;
+import android.widget.TextView;
 
 import com.hiber.bean.RootProperty;
 import com.hiber.bean.SkipBean;
@@ -89,6 +95,11 @@ public abstract class RootMAActivity extends FragmentActivity {
      * fragment容器ID 如:R.id.frame
      */
     private int containId = R.id.fl_hiber_contain;
+
+    /**
+     * 自定义吐司
+     */
+    public TextView tvToast;
 
     /**
      * fragment字节码数组 如:[fragment1.class,fragment2.class,...]
@@ -169,7 +180,8 @@ public abstract class RootMAActivity extends FragmentActivity {
                     }
 
                     // 5.填充视图
-                    setContentView(layoutId);
+                    // setContentView(layoutId);
+                    setContentView(getHiberView(layoutId));
                     // 6.绑定butterknife
                     ButterKnife.bind(this);
                     // 7.设置状态栏颜色
@@ -198,6 +210,39 @@ public abstract class RootMAActivity extends FragmentActivity {
             toast(err, 5000);
             Lgg.t(TAG).ee(err);
         }
+    }
+
+    /**
+     * 生成带吐司的布局
+     *
+     * @param layoutId 布局ID
+     * @return 复合布局
+     */
+    private View getHiberView(int layoutId) {
+        // 生成顶级布局
+        RelativeLayout hiberRelative = new RelativeLayout(this);
+        ViewGroup.LayoutParams vp = new ViewGroup.LayoutParams(-1, -1);
+        hiberRelative.setLayoutParams(vp);
+        // 填充外部布局
+        View inflate = View.inflate(this, layoutId, null);
+        hiberRelative.addView(inflate);
+        // 新建吐司文本
+        tvToast = new TextView(this);
+        RelativeLayout.LayoutParams rlp = new RelativeLayout.LayoutParams(-2, -2);
+        rlp.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
+        rlp.addRule(RelativeLayout.CENTER_HORIZONTAL);
+        rlp.setMarginStart(15);
+        rlp.setMarginEnd(15);
+        rlp.bottomMargin = 60;
+        tvToast.setLayoutParams(rlp);
+        int px = 8;
+        tvToast.setPadding(px, px, px, px);
+        tvToast.setTextColor(Color.WHITE);
+        tvToast.setBackgroundResource(R.drawable.corner2);
+        tvToast.setTextSize(TypedValue.COMPLEX_UNIT_SP, 15);
+        tvToast.setAlpha(0);
+        hiberRelative.addView(tvToast);
+        return hiberRelative;
     }
 
     @Override
