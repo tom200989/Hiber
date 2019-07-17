@@ -41,6 +41,8 @@ public class ActivityHelper implements Application.ActivityLifecycleCallbacks {
         // 2.再添加新建的AC
         printRootAcList("add before");
         RootApp.activities.add(activity);
+        // 3.赋值当前顶层的activity
+        RootApp.TOP_ACTIVITY = activity;
     }
 
     @Override
