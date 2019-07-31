@@ -42,14 +42,15 @@ public class CrashHelper {
                     String acError = app.getString(R.string.ACTION_ERR);
                     String des = String.format(acError, getTargetACAction(errTrace));
                     Lgg.t(Cons.TAG).ee("CrashHelper--> " + des);
+                    // 记录日志
+                    recordCrash(des);
                     // 显示Activity窗体
                     showErrWindow(context, des);
-                    // 记录日志
-                    recordCrash(context, des);
                 } else {
-                    showErrWindow(context, errTrace);
                     // 记录日志
-                    recordCrash(context, errTrace);
+                    recordCrash(errTrace);
+                    // 显示错误窗体
+                    showErrWindow(context, errTrace);
                 }
                 // 系统打印(无效--> 因为printStream已经被getExceptionTrace()消费
                 // ex.printStackTrace();
@@ -110,18 +111,30 @@ public class CrashHelper {
     /**
      * 记录crash
      *
-     * @param context 域
-     * @param des     错误信息
+     * @param des 错误信息
      */
-    private void recordCrash(Context context, String des) {
+    private void recordCrash(String des) {
+
+        // String dirs = Environment.getExternalStorageDirectory().getAbsolutePath() + "/applications/crash";
+        // createFileDirectorys(dirs);
+        // File crashLog = new File(dirs + "/crash.log");
+
         // 1.获取SD根目录
         File sdDir = Environment.getExternalStorageDirectory();
-        // 2.创建crash文件夹 -- sdcard/0/com.trackerandroid.trackerandroid/crash
-        File crashDir = new File(sdDir.getAbsolutePath() + "/" + context.getPackageName() + "/crash");
-        if (!crashDir.exists() || !crashDir.isDirectory()) {
-            crashDir.mkdir();
+        if (!sdDir.exists() || !sdDir.isDirectory()) {
+            sdDir.mkdirs();
         }
-        // 3.创建crash文件 -- crash.log
+        // 2.创建一级文件夹 -- sdcard/applications
+        File applicationsDir = new File(sdDir.getAbsolutePath() + "/applications");
+        if (!applicationsDir.exists() || !applicationsDir.isDirectory()) {
+            applicationsDir.mkdirs();
+        }
+        // 3.创建二级文件夹 -- sdcard/applications/crash
+        File crashDir = new File(applicationsDir.getAbsolutePath() + "/crash");
+        if (!crashDir.exists() || !crashDir.isDirectory()) {
+            crashDir.mkdirs();
+        }
+        // 4.创建crash文件 -- crash.log
         File crashLog = new File(crashDir.getAbsolutePath() + "/crash.log");
         if (!crashLog.exists()) {
             try {
@@ -133,6 +146,21 @@ public class CrashHelper {
         }
         // 4.写入crash信息
         writeCrashLog(crashLog, des);
+    }
+
+    /**
+     * 创建多级文件目录
+     */
+    private void createFileDirectorys(String fileDir) {
+        String[] fileDirs = fileDir.split("/");
+        String topPath = "";
+        for (String fileDir1 : fileDirs) {
+            topPath += "/" + fileDir1;
+            File file = new File(topPath);
+            if (!file.exists() | !file.isDirectory()) {
+                file.mkdir();
+            }
+        }
     }
 
     /**
