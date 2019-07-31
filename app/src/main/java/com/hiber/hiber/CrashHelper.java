@@ -1,8 +1,10 @@
 package com.hiber.hiber;
 
+import android.annotation.SuppressLint;
 import android.app.Application;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Environment;
 
 import com.hiber.cons.Cons;
 import com.hiber.tools.CrashHanlder;
@@ -10,13 +12,18 @@ import com.hiber.tools.Lgg;
 import com.hiber.ui.ActivityNotFound;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 /*
  * Created by qianli.ma on 2019/3/5 0005.
  */
+@SuppressLint("SimpleDateFormat")
 public class CrashHelper {
 
     /**
@@ -37,10 +44,13 @@ public class CrashHelper {
                     Lgg.t(Cons.TAG).ee("CrashHelper--> " + des);
                     // 显示Activity窗体
                     showErrWindow(context, des);
+                    // 记录日志
+                    recordCrash(context, des);
                 } else {
                     showErrWindow(context, errTrace);
+                    // 记录日志
+                    recordCrash(context, errTrace);
                 }
-                
                 // 系统打印(无效--> 因为printStream已经被getExceptionTrace()消费
                 // ex.printStackTrace();
             }
@@ -95,6 +105,64 @@ public class CrashHelper {
         context.startActivity(intent);
         // (此处可能会导致先前的log打印停止,出现控制没有Log的信息)
         System.exit(0);// 关闭已奔溃的app进程
+    }
 
+    /**
+     * 记录crash
+     *
+     * @param context 域
+     * @param des     错误信息
+     */
+    private void recordCrash(Context context, String des) {
+        // 1.获取SD根目录
+        File sdDir = Environment.getExternalStorageDirectory();
+        // 2.创建crash文件夹 -- sdcard/0/com.trackerandroid.trackerandroid/crash
+        File crashDir = new File(sdDir.getAbsolutePath() + "/" + context.getPackageName() + "/crash");
+        if (!crashDir.exists() || !crashDir.isDirectory()) {
+            crashDir.mkdir();
+        }
+        // 3.创建crash文件 -- crash.log
+        File crashLog = new File(crashDir.getAbsolutePath() + "/crash.log");
+        if (!crashLog.exists()) {
+            try {
+                crashLog.createNewFile();
+            } catch (IOException e) {
+                e.printStackTrace();
+                Lgg.t(Cons.TAG).ee("creat crash log file failed");
+            }
+        }
+        // 4.写入crash信息
+        writeCrashLog(crashLog, des);
+    }
+
+    /**
+     * 写入错误字符到文件
+     *
+     * @param file 文件
+     * @param des  错误信息
+     */
+    private void writeCrashLog(File file, String des) {
+        // 生成日期
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        String dateStr = format.format(new Date());
+        // 拼接分割线
+        StringBuilder builder = new StringBuilder();
+        builder.append("------------------------------------------- ");
+        builder.append(dateStr);
+        builder.append(" -------------------------------------------").append("\n");
+        builder.append(des).append("\n");
+        builder.append("------------------------------------------- END -------------------------------------------").append("\n");
+        des = builder.toString();
+
+        try {
+            FileOutputStream output = new FileOutputStream(file, true);
+            byte[] desBytes = des.getBytes(StandardCharsets.UTF_8);
+            output.write(desBytes);
+            output.flush();
+            output.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+            Lgg.t(Cons.TAG).ee("write crash content failed");
+        }
     }
 }
