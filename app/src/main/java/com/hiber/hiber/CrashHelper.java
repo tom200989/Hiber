@@ -115,10 +115,6 @@ public class CrashHelper {
      */
     private void recordCrash(String des) {
 
-        // String dirs = Environment.getExternalStorageDirectory().getAbsolutePath() + "/applications/crash";
-        // createFileDirectorys(dirs);
-        // File crashLog = new File(dirs + "/crash.log");
-
         // 1.获取SD根目录
         File sdDir = Environment.getExternalStorageDirectory();
         if (!sdDir.exists() || !sdDir.isDirectory()) {
@@ -149,21 +145,6 @@ public class CrashHelper {
     }
 
     /**
-     * 创建多级文件目录
-     */
-    private void createFileDirectorys(String fileDir) {
-        String[] fileDirs = fileDir.split("/");
-        String topPath = "";
-        for (String fileDir1 : fileDirs) {
-            topPath += "/" + fileDir1;
-            File file = new File(topPath);
-            if (!file.exists() | !file.isDirectory()) {
-                file.mkdir();
-            }
-        }
-    }
-
-    /**
      * 写入错误字符到文件
      *
      * @param file 文件
@@ -179,7 +160,7 @@ public class CrashHelper {
         builder.append(dateStr);
         builder.append(" -------------------------------------------").append("\n");
         builder.append(des).append("\n");
-        builder.append("------------------------------------------- END -------------------------------------------").append("\n");
+        builder.append("------------------------------------------- END -------------------------------------------").append("\n\n");
         des = builder.toString();
 
         try {
