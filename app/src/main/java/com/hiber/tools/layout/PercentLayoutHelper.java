@@ -570,7 +570,7 @@ public class PercentLayoutHelper {
             View view = mHost.getChildAt(i);
             ViewGroup.LayoutParams params = view.getLayoutParams();
             if (Log.isLoggable(TAG, Log.DEBUG)) {
-                Log.d(TAG, "should handle measured state too small " + view + " " + params);
+                Log.d(TAG, "should handle measured timerState too small " + view + " " + params);
             }
             if (params instanceof PercentLayoutParams) {
                 PercentLayoutInfo info = ((PercentLayoutParams) params).getPercentLayoutInfo();

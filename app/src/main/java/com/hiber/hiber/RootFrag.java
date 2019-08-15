@@ -22,9 +22,11 @@ import com.hiber.bean.PermissBean;
 import com.hiber.bean.SkipBean;
 import com.hiber.bean.StringBean;
 import com.hiber.cons.Cons;
+import com.hiber.cons.TimerState;
 import com.hiber.impl.PermissedListener;
 import com.hiber.impl.RootEventListener;
 import com.hiber.tools.Lgg;
+import com.hiber.tools.TimerHelper;
 import com.hiber.tools.backhandler.FragmentBackHandler;
 import com.hiber.ui.PermissFragment;
 
@@ -58,12 +60,19 @@ public abstract class RootFrag extends Fragment implements FragmentBackHandler {
      */
     public static Class lastFrag;
 
+    // 定时器统一管理处
+    private static List<TimerHelper> timerList = new ArrayList<>();
+    private TimerHelper timerHelper;// 定时器
+    public int timer_delay = 0;// 默认延迟时间
+    public int timer_period = 3000;// 默认间隙时间
+    public TimerState timerState;// 用户可改变的定时器状态:(ON,OFF_ALL,OFF_ALL_KEEP_CURRENT,ON_BUT_OFF_WHEN_PAUSE)
+
     private static final String TAG = "RootFrag";
     public FragmentActivity activity;
     private Unbinder unbinder;
     private View inflateView;
     private int layoutId;
-    protected static String whichFragmentStart;
+    protected static String whichFragmentStart;// 由哪个页面跳转过来
 
     // 权限相关
     private int permissedCode = 0x101;
@@ -199,6 +208,11 @@ public abstract class RootFrag extends Fragment implements FragmentBackHandler {
             //if (permissedListener != null && initPermisseds != null) {
             //permissedListener.permissionResult(true,null);
             //}
+
+            // 当从后台回来并且isReloadData没有设置为true(即不会走onNext)的情况下 -- 从这里启动定时器
+            if (!isReloadData() & EventBus.getDefault().isRegistered(this)) {
+                beginTimer();
+            }
 
             // 1.2.初始化权限全部通过 || 点击申请即使不通过 --> 也不影响数据初始化
             if (!EventBus.getDefault().isRegistered(this)) {
@@ -399,7 +413,75 @@ public abstract class RootFrag extends Fragment implements FragmentBackHandler {
         if (getClass().getSimpleName().equalsIgnoreCase(targetFragment)) {
             Lgg.t(Cons.TAG).vv("whichFragmentStart <equal to> targetFragment");
             onNexts(attachs, inflateView, whichFragmentStart);// 抽象
+            beginTimer();// 开始启动定时器
         }
+    }
+
+    /**
+     * 启动定时器
+     */
+    private void beginTimer() {
+
+        if (timerState == TimerState.ON | timerState == TimerState.ON_BUT_OFF_WHEN_PAUSE) {// 开启 | 开启但pause要停止
+            clearTimer(timerHelper);
+
+        } else if (timerState == TimerState.OFF_ALL) {// 关闭全部
+            clearAllTimer();
+
+        } else if (timerState == TimerState.OFF_ALL_BUT_KEEP_CURRENT) {// 关闭全部(但不包含当前)
+            clearAllTimer();
+        }
+
+        // 关闭全部(但不包含当前) | 开启 | 开启但pause要停止
+        if (timerState == TimerState.OFF_ALL_BUT_KEEP_CURRENT | timerState == TimerState.ON | timerState == TimerState.ON_BUT_OFF_WHEN_PAUSE) {
+            // 2.创建新的定时器
+            timerHelper = new TimerHelper(activity) {
+                @Override
+                public void doSomething() {
+                    setTimerTask();
+                }
+            };
+            // 3.添加到管理处
+            timerList.add(timerHelper);
+            // 4.检查合理性
+            checkDelayPeriod();
+            // 5.正式启动
+            timerHelper.start(timer_delay, timer_period);
+        }
+    }
+
+    /**
+     * 检查延迟和间隔的合理性
+     */
+    private void checkDelayPeriod() {
+        timer_delay = timer_delay <= 0 ? 0 : timer_delay;
+        timer_period = timer_period <= 0 ? 3000 : timer_period;
+    }
+
+    /**
+     * 清除定时器
+     *
+     * @param timerHelper 清除的对象
+     */
+    private void clearTimer(TimerHelper timerHelper) {
+        if (timerHelper != null) {
+            timerHelper.stop();
+            timerList.remove(timerHelper);
+            timerHelper = null;
+        }
+    }
+
+    /**
+     * 清理全部定时器
+     */
+    private void clearAllTimer() {
+        for (TimerHelper timerHelper : timerList) {
+            if (timerHelper != null) {
+                timerHelper.stop();
+                timerHelper = null;
+            }
+        }
+        timerList.clear();
     }
 
     @Override
@@ -410,6 +492,10 @@ public abstract class RootFrag extends Fragment implements FragmentBackHandler {
             Lgg.t(Cons.TAG).vv("Method--> " + getClass().getSimpleName() + ":eventbus unregister");
             EventBus.getDefault().unregister(this);
         }
+        // 如果用户设置了该标记位 -- 则pause停止定时器
+        if (timerState == TimerState.ON_BUT_OFF_WHEN_PAUSE) {
+            clearTimer(timerHelper);
+        }
     }
 
     @Override
@@ -417,6 +503,8 @@ public abstract class RootFrag extends Fragment implements FragmentBackHandler {
         // 解决跨module时, eventbus没有注销而导致从其他module返回时, 会被之前的eventbus重复响应的问题
         // 因此在fragment彻底被销毁时, 需要把eventbus完全注销
         EventBus.getDefault().unregister(this);
+        // 停止和清理定时器
+        clearTimer(timerHelper);
         super.onDestroy();
     }
 
@@ -429,7 +517,6 @@ public abstract class RootFrag extends Fragment implements FragmentBackHandler {
     }
 
     /* -------------------------------------------- abstract -------------------------------------------- */
-
 
     /**
      * @return 1.填入layoutId
@@ -476,6 +563,13 @@ public abstract class RootFrag extends Fragment implements FragmentBackHandler {
      */
     public boolean isReloadData() {
         return true;
+    }
+
+    /**
+     * 提供给外部设定的任务
+     */
+    public void setTimerTask() {
+        // 这里用户做的定时任务逻辑
     }
 
     /* -------------------------------------------- public -------------------------------------------- */
