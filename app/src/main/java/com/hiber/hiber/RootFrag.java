@@ -430,10 +430,16 @@ public abstract class RootFrag extends Fragment implements FragmentBackHandler {
 
         } else if (timerState == TimerState.OFF_ALL_BUT_KEEP_CURRENT) {// 关闭全部(但不包含当前)
             clearAllTimer();
+
+        } else if (timerState == TimerState.OFF_ALL_BUT_KEEP_CURRENT_OFF_WHEN_PAUSE) {// 关闭全部(但不包含当前) 但pause时停止当前
+            clearAllTimer();
         }
 
-        // 关闭全部(但不包含当前) | 开启 | 开启但pause要停止
-        if (timerState == TimerState.OFF_ALL_BUT_KEEP_CURRENT | timerState == TimerState.ON | timerState == TimerState.ON_BUT_OFF_WHEN_PAUSE) {
+        if (timerState == TimerState.OFF_ALL_BUT_KEEP_CURRENT // 关闭全部(但不包含当前)
+                    | timerState == TimerState.ON // 开启
+                    | timerState == TimerState.ON_BUT_OFF_WHEN_PAUSE // 开启但pause要停止
+                    | timerState == TimerState.OFF_ALL_BUT_KEEP_CURRENT_OFF_WHEN_PAUSE // 关闭全部(但不包含当前) 但pause时停止当前
+        ) {
             // 2.创建新的定时器
             timerHelper = new TimerHelper(activity) {
                 @Override
@@ -493,7 +499,7 @@ public abstract class RootFrag extends Fragment implements FragmentBackHandler {
             EventBus.getDefault().unregister(this);
         }
         // 如果用户设置了该标记位 -- 则pause停止定时器
-        if (timerState == TimerState.ON_BUT_OFF_WHEN_PAUSE) {
+        if (timerState == TimerState.ON_BUT_OFF_WHEN_PAUSE | timerState == TimerState.OFF_ALL_BUT_KEEP_CURRENT_OFF_WHEN_PAUSE) {
             clearTimer(timerHelper);
         }
     }

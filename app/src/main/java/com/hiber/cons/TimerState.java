@@ -23,7 +23,12 @@ public enum TimerState {
     /**
      * 开启但在pause时停止
      */
-    ON_BUT_OFF_WHEN_PAUSE(4);
+    ON_BUT_OFF_WHEN_PAUSE(4),
+
+    /**
+     * 开启但在pause时停止
+     */
+    OFF_ALL_BUT_KEEP_CURRENT_OFF_WHEN_PAUSE(5);
 
     private Integer timerState;
 
