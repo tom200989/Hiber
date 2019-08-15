@@ -209,8 +209,14 @@ public abstract class RootFrag extends Fragment implements FragmentBackHandler {
             //permissedListener.permissionResult(true,null);
             //}
 
-            // 当从后台回来并且isReloadData没有设置为true(即不会走onNext)的情况下 -- 从这里启动定时器
-            if (!isReloadData() & EventBus.getDefault().isRegistered(this)) {
+            // 当从后台回来 && isReloadData没有设置为true(即不会走onNext) && 当前Fragment处于显示状态的情况下 -- 从这里启动定时器
+            /* 注意: 这里加isHidden()的原因是因为防止以下情况:
+             * Frag A设置了ON, Frag B设置了OFF_ALL_X
+             * 然后从Frag B跳转到Frag A, 然后Frag A切换到后台再Frag A和Frag B会同时执行OnResume()
+             * 那么设置了OFF_ALL的会把ON的杀掉, 造成定时器不启动的感觉
+             * 所以要利用isHidden()来过滤, 以当前显示给用户的界面为准
+             * */
+            if (!isReloadData() & EventBus.getDefault().isRegistered(this) & !isHidden()) {
                 beginTimer();
             }
 
