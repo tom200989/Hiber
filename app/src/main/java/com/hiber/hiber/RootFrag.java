@@ -423,12 +423,24 @@ public abstract class RootFrag extends Fragment implements FragmentBackHandler {
         }
     }
 
+    @Override
+    public void onHiddenChanged(boolean hidden) {
+        if (isHidden()) {
+            if (timerState == TimerState.ON_BUT_OFF_WHEN_HIDE | timerState == TimerState.ON_BUT_OFF_WHEN_HIDE_AND_PAUSE) {
+                clearTimer(timerHelper);
+            }
+        }
+    }
+
     /**
      * 启动定时器
      */
     private void beginTimer() {
 
-        if (timerState == TimerState.ON | timerState == TimerState.ON_BUT_OFF_WHEN_PAUSE) {// 开启 | 开启但pause要停止
+        if (timerState == TimerState.ON //
+                    | timerState == TimerState.ON_BUT_OFF_WHEN_PAUSE //
+                    | timerState == TimerState.ON_BUT_OFF_WHEN_HIDE //
+                    | timerState == TimerState.ON_BUT_OFF_WHEN_HIDE_AND_PAUSE) {// 开启 | 开启但pause要停止
             clearTimer(timerHelper);
 
         } else if (timerState == TimerState.OFF_ALL) {// 关闭全部
@@ -505,7 +517,9 @@ public abstract class RootFrag extends Fragment implements FragmentBackHandler {
             EventBus.getDefault().unregister(this);
         }
         // 如果用户设置了该标记位 -- 则pause停止定时器
-        if (timerState == TimerState.ON_BUT_OFF_WHEN_PAUSE | timerState == TimerState.OFF_ALL_BUT_KEEP_CURRENT_OFF_WHEN_PAUSE) {
+        if (timerState == TimerState.ON_BUT_OFF_WHEN_PAUSE // 
+                    | timerState == TimerState.OFF_ALL_BUT_KEEP_CURRENT_OFF_WHEN_PAUSE // 
+                    | timerState == TimerState.ON_BUT_OFF_WHEN_HIDE_AND_PAUSE) {//
             clearTimer(timerHelper);
         }
     }

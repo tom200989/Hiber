@@ -11,24 +11,35 @@ public enum TimerState {
     ON(1),
 
     /**
-     * 关闭全部
+     * 需要开启, 但Hide以及pause的时候停止
      */
-    OFF_ALL(2),
+    ON_BUT_OFF_WHEN_HIDE_AND_PAUSE(2),
 
     /**
-     * 关闭全部(但保留当前)
+     * 开启但在pause时停止当前
      */
-    OFF_ALL_BUT_KEEP_CURRENT(3),
+    ON_BUT_OFF_WHEN_PAUSE(3),
 
     /**
-     * 开启但在pause时停止
+     * 需要开启,但在Hide的时候要停止
      */
-    ON_BUT_OFF_WHEN_PAUSE(4),
+    ON_BUT_OFF_WHEN_HIDE(4),
 
     /**
-     * 开启但在pause时停止
+     * 直接关闭全部
      */
-    OFF_ALL_BUT_KEEP_CURRENT_OFF_WHEN_PAUSE(5);
+    OFF_ALL(5),
+
+    /**
+     * 关闭全部, 但保留当前
+     */
+    OFF_ALL_BUT_KEEP_CURRENT(6),
+
+    /**
+     * 开启但在pause时停止全部
+     */
+    OFF_ALL_BUT_KEEP_CURRENT_OFF_WHEN_PAUSE(7);
+
 
     private Integer timerState;
 
