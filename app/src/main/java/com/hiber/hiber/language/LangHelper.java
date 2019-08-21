@@ -117,12 +117,12 @@ public class LangHelper {
     }
 
     /**
-     * 获取由APP保存的语言对象
+     * 获取由APP保存的语言对象(以自己选择的优先)
      *
      * @param context 上下文
      * @return APP保存的语言对象
      */
-    private static Locale getLocale(Context context) {
+    public static Locale getLocale(Context context) {
 
         Locale locale;
         // 1.获取系统语言(获取方式分为 >= 7.0 & < 7.0)
