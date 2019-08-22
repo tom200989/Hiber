@@ -94,6 +94,7 @@ public class LangHelper {
         }
         DisplayMetrics dm = resources.getDisplayMetrics();
         resources.updateConfiguration(configuration, dm);
+        Locale.setDefault(locale);
     }
 
     /**
