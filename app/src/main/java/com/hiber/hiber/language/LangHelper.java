@@ -94,7 +94,7 @@ public class LangHelper {
         }
         DisplayMetrics dm = resources.getDisplayMetrics();
         resources.updateConfiguration(configuration, dm);
-        Locale.setDefault(locale);
+        Locale.setDefault(locale);// 该句必须要重新刷新
     }
 
     /**
