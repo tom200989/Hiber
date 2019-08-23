@@ -704,6 +704,21 @@ public abstract class RootMAActivity extends FragmentActivity {
         eventClazzs = null;
     }
 
+    /**
+     * 移除指定的fragment
+     *
+     * @param needkills 指定的fragment
+     */
+    private void killWhich(Class... needkills) {
+        if (needkills.length > 0 & fraHelpers != null) {
+            for (Class needkill : needkills) {
+                if (Fragment.class.isAssignableFrom(needkill)) {
+                    fraHelpers.remove(needkill);
+                }
+            }
+        }
+    }
+
     /* -------------------------------------------- public method -------------------------------------------- */
 
     /**
@@ -713,8 +728,9 @@ public abstract class RootMAActivity extends FragmentActivity {
      * @param targetFragmentClass     目标
      * @param attach                  额外附带数据对象
      * @param isTargetReload          是否重载视图
+     * @param needkills               跳转前需要杀死哪些fragment
      */
-    public void toFrag(Class classWhichFragmentStart, Class targetFragmentClass, Object attach, boolean isTargetReload) {
+    public void toFrag(Class classWhichFragmentStart, Class targetFragmentClass, Object attach, boolean isTargetReload, Class... needkills) {
         // 检测传输目标是否为空
         if (classWhichFragmentStart == null | targetFragmentClass == null) {
             toast(getString(R.string.NULL_TIP), 5000);
@@ -735,7 +751,7 @@ public abstract class RootMAActivity extends FragmentActivity {
         // 1.再传输(否则会出现nullPointException)
         EventBus.getDefault().removeStickyEvent(FragBean.class);
         // 2.先跳转
-        fraHelpers.transfer(fragBean.getTargetFragmentClass(), isTargetReload);
+        fraHelpers.transfer(fragBean.getTargetFragmentClass(), isTargetReload, needkills);
         EventBus.getDefault().postSticky(fragBean);
     }
 
@@ -747,12 +763,13 @@ public abstract class RootMAActivity extends FragmentActivity {
      * @param attach         附带
      * @param isTargetReload 是否重载视图
      * @param delayMilis     延迟毫秒数
+     * @param needkills      跳转前需要杀死哪些fragment
      */
-    public void toFrag(Class current, Class target, Object attach, boolean isTargetReload, int delayMilis) {
+    public void toFrag(Class current, Class target, Object attach, boolean isTargetReload, int delayMilis, Class... needkills) {
         Thread ta = new Thread(() -> {
             try {
                 Thread.sleep(delayMilis);
-                runOnUiThread(() -> toFrag(current, target, attach, isTargetReload));
+                runOnUiThread(() -> toFrag(current, target, attach, isTargetReload, needkills));
             } catch (InterruptedException e) {
                 e.printStackTrace();
                 Lgg.t(Cons.TAG).ee("RootMAActivity error: " + e.getMessage());
@@ -769,8 +786,9 @@ public abstract class RootMAActivity extends FragmentActivity {
      * @param target         目标fragment
      * @param attach         附件
      * @param isTargetReload 是否重载目标fragment
+     * @param needKills      跳转前需要杀死哪些fragmentF
      */
-    public void toFragActivity(Class current, Class targetAC, Class target, Object attach, boolean isTargetReload) {
+    public void toFragActivity(Class current, Class targetAC, Class target, Object attach, boolean isTargetReload, Class... needKills) {
         // 检测传输目标是否为空
         if (current == null | targetAC == null | target == null) {
             toast(getString(R.string.NULL_TIP), 5000);
@@ -787,6 +805,9 @@ public abstract class RootMAActivity extends FragmentActivity {
         }
         SkipBean skipbean = getSkipbean(current, targetAC, target, attach, isTargetReload, false);
         RootHelper.toActivityImplicit(this, skipbean.getTargetActivityClassName(), false, false, false, 0, skipbean);
+        if (needKills.length > 0) {
+            killWhich(needKills);
+        }
     }
 
     /**
@@ -799,8 +820,9 @@ public abstract class RootMAActivity extends FragmentActivity {
      * @param isTargetReload 是否重载目标fragment
      * @param isFinish       是否结束当前AC
      * @param delay          延迟毫秒数
+     * @param needKills      跳转前需要杀死哪些fragment
      */
-    public void toFragActivity(Class current, Class targetAC, Class target, Object attach, boolean isTargetReload, boolean isFinish, int delay) {
+    public void toFragActivity(Class current, Class targetAC, Class target, Object attach, boolean isTargetReload, boolean isFinish, int delay, Class... needKills) {
         // 检测传输目标是否为空
         if (current == null | targetAC == null | target == null) {
             toast(getString(R.string.NULL_TIP), 5000);
@@ -817,6 +839,9 @@ public abstract class RootMAActivity extends FragmentActivity {
         }
         SkipBean skipbean = getSkipbean(current, targetAC, target, attach, isTargetReload, isFinish);
         RootHelper.toActivityImplicit(this, skipbean.getTargetActivityClassName(), false, isFinish, false, delay, skipbean);
+        if (needKills.length > 0) {
+            killWhich(needKills);
+        }
     }
 
     /**
@@ -827,8 +852,9 @@ public abstract class RootMAActivity extends FragmentActivity {
      * @param target         目标fragment
      * @param attach         附件
      * @param isTargetReload 是否重载目标fragment
+     * @param needKills      跳转前需要杀死哪些fragment
      */
-    public void toFragModule(Class current, String activityClass, String target, Object attach, boolean isTargetReload) {
+    public void toFragModule(Class current, String activityClass, String target, Object attach, boolean isTargetReload, Class... needKills) {
         // 检测传输目标是否为空
         if (current == null | activityClass == null | target == null) {
             toast(getString(R.string.NULL_TIP), 5000);
@@ -851,6 +877,9 @@ public abstract class RootMAActivity extends FragmentActivity {
         skipbean.setTargetReload(isTargetReload);
         skipbean.setCurrentACFinish(false);
         RootHelper.toActivityImplicit(this, activityClass, false, false, false, 0, skipbean);
+        if (needKills.length > 0) {
+            killWhich(needKills);
+        }
     }
 
     /**
@@ -863,8 +892,9 @@ public abstract class RootMAActivity extends FragmentActivity {
      * @param isTargetReload 是否重载目标fragment
      * @param isFinish       是否结束当前AC
      * @param delay          延迟毫秒数
+     * @param needKills      跳转前需要杀死哪些fragment
      */
-    public void toFragModule(Class current, String activityClass, String target, Object attach, boolean isTargetReload, boolean isFinish, int delay) {
+    public void toFragModule(Class current, String activityClass, String target, Object attach, boolean isTargetReload, boolean isFinish, int delay, Class... needKills) {
         // 检测传输目标是否为空
         if (current == null | activityClass == null | target == null) {
             toast(getString(R.string.NULL_TIP), 5000);
@@ -887,6 +917,9 @@ public abstract class RootMAActivity extends FragmentActivity {
         skipbean.setTargetReload(isTargetReload);
         skipbean.setCurrentACFinish(false);
         RootHelper.toActivityImplicit(this, activityClass, false, isFinish, false, delay, skipbean);
+        if (needKills.length > 0) {
+            killWhich(needKills);
+        }
     }
 
     /**

@@ -673,11 +673,12 @@ public abstract class RootFrag extends Fragment implements FragmentBackHandler {
      * @param target         目标
      * @param attach         附带
      * @param isTargetReload 是否重载视图
+     * @param needKills      需要移除的fragment
      */
-    public void toFrag(Class current, Class target, Object attach, boolean isTargetReload) {
+    public void toFrag(Class current, Class target, Object attach, boolean isTargetReload, Class... needKills) {
         RootMAActivity activity = (RootMAActivity) getActivity();
         if (activity != null) {
-            activity.toFrag(current, target, attach, isTargetReload);
+            activity.toFrag(current, target, attach, isTargetReload, needKills);
         } else {
             Lgg.t(Cons.TAG).ee("RootFrag--> toFrag() error: RootMAActivity is null");
         }
@@ -691,11 +692,12 @@ public abstract class RootFrag extends Fragment implements FragmentBackHandler {
      * @param attach         附带
      * @param isTargetReload 是否重载视图
      * @param delayMilis     延迟毫秒数
+     * @param needKills      需要移除的fragment
      */
-    public void toFrag(Class current, Class target, Object attach, boolean isTargetReload, int delayMilis) {
+    public void toFrag(Class current, Class target, Object attach, boolean isTargetReload, int delayMilis, Class... needKills) {
         RootMAActivity activity = (RootMAActivity) getActivity();
         if (activity != null) {
-            activity.toFrag(current, target, attach, isTargetReload, delayMilis);
+            activity.toFrag(current, target, attach, isTargetReload, delayMilis, needKills);
         } else {
             Lgg.t(Cons.TAG).ee("RootHiber--> toFrag() error: RootMAActivity is null");
         }
@@ -709,12 +711,13 @@ public abstract class RootFrag extends Fragment implements FragmentBackHandler {
      * @param target         目标fragment
      * @param attach         附件
      * @param isTargetReload 是否重载目标fragment
+     * @param needKills      需要移除的fragment
      */
-    public void toFragActivity(Class current, Class targetAC, Class target, Object attach, boolean isTargetReload) {
+    public void toFragActivity(Class current, Class targetAC, Class target, Object attach, boolean isTargetReload, Class... needKills) {
 
         RootMAActivity rootMAActivity = (RootMAActivity) activity;
         if (rootMAActivity != null) {
-            rootMAActivity.toFragActivity(current, targetAC, target, attach, isTargetReload);
+            rootMAActivity.toFragActivity(current, targetAC, target, attach, isTargetReload, needKills);
         } else {
             Lgg.t(Cons.TAG).ee("Rootfrag--> toFragActivity() error: RootMAActivity is null");
         }
@@ -730,11 +733,12 @@ public abstract class RootFrag extends Fragment implements FragmentBackHandler {
      * @param isTargetReload 是否重载目标fragment
      * @param isFinish       是否结束当前AC
      * @param delay          延迟毫秒数
+     * @param needKills      需要移除的fragment
      */
-    public void toFragActivity(Class current, Class targetAC, Class target, Object attach, boolean isTargetReload, boolean isFinish, int delay) {
+    public void toFragActivity(Class current, Class targetAC, Class target, Object attach, boolean isTargetReload, boolean isFinish, int delay, Class... needKills) {
         RootMAActivity rootMAActivity = (RootMAActivity) activity;
         if (rootMAActivity != null) {
-            rootMAActivity.toFragActivity(current, targetAC, target, attach, isTargetReload, isFinish, delay);
+            rootMAActivity.toFragActivity(current, targetAC, target, attach, isTargetReload, isFinish, delay, needKills);
         } else {
             Lgg.t(Cons.TAG).ee("Rootfrag--> toFragActivity() error: RootMAActivity is null");
         }
@@ -748,11 +752,12 @@ public abstract class RootFrag extends Fragment implements FragmentBackHandler {
      * @param target         目标fragment
      * @param attach         附件
      * @param isTargetReload 是否重载目标fragment
+     * @param needKills      需要移除的fragment
      */
-    public void toFragModule(Class current, String activityClass, String target, Object attach, boolean isTargetReload) {
+    public void toFragModule(Class current, String activityClass, String target, Object attach, boolean isTargetReload, Class... needKills) {
         RootMAActivity rootMAActivity = (RootMAActivity) activity;
         if (rootMAActivity != null) {
-            rootMAActivity.toFragModule(current, activityClass, target, attach, isTargetReload);
+            rootMAActivity.toFragModule(current, activityClass, target, attach, isTargetReload, needKills);
         } else {
             Lgg.t(Cons.TAG).ee("Rootfrag--> toFragActivity() error: RootMAActivity is null");
         }
@@ -768,11 +773,12 @@ public abstract class RootFrag extends Fragment implements FragmentBackHandler {
      * @param isTargetReload 是否重载目标fragment
      * @param isFinish       是否结束当前AC
      * @param delay          延迟毫秒数
+     * @param needKills      需要移除的fragment
      */
-    public void toFragModule(Class current, String activityClass, String target, Object attach, boolean isTargetReload, boolean isFinish, int delay) {
+    public void toFragModule(Class current, String activityClass, String target, Object attach, boolean isTargetReload, boolean isFinish, int delay, Class... needKills) {
         RootMAActivity rootMAActivity = (RootMAActivity) activity;
         if (rootMAActivity != null) {
-            rootMAActivity.toFragModule(current, activityClass, target, attach, isTargetReload, isFinish, delay);
+            rootMAActivity.toFragModule(current, activityClass, target, attach, isTargetReload, isFinish, delay, needKills);
         } else {
             Lgg.t(Cons.TAG).ee("Rootfrag--> toFragActivity() error: RootMAActivity is null");
         }

@@ -1,5 +1,6 @@
 package com.hiber.hiber;
 
+import android.os.Handler;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
@@ -138,10 +139,11 @@ public class FraHelpers {
     /**
      * 切换fragment
      *
-     * @param clazz    需要切换的fragment class
-     * @param isReload 是否强制重载
+     * @param target         需要切换的fragment class
+     * @param isTargetReload 是否强制重载
+     * @param needKills       需要移除的fragment
      */
-    public void transfer(Class clazz, boolean isReload) {
+    public void transfer(Class target, boolean isTargetReload, Class... needKills) {
 
         try {
             // 1.开启事务
@@ -159,12 +161,12 @@ public class FraHelpers {
             }
 
             // 3.以类名为tag, 查找对应的fragment
-            String tag = clazz.getSimpleName();
+            String tag = target.getSimpleName();
             fragment = fm.findFragmentByTag(tag);
             if (fragment == null) {
                 FragmentTransaction ft = fm.beginTransaction();
                 // 3.1.创建fragment
-                fragment = (Fragment) clazz.newInstance();
+                fragment = (Fragment) target.newInstance();
                 // 3.2.添加到容器, 以类名为tag
                 ft.add(contain, fragment, tag);
                 ft.show(fragment);
@@ -173,13 +175,23 @@ public class FraHelpers {
             } else {
 
                 /* 如果收到重载指令--> 执行reload(clazz) */
-                if (isReload) {
-                    reload(clazz);
+                if (isTargetReload) {
+                    reload(target);
                 } else {// 否则正常显示
                     FragmentTransaction ft = fm.beginTransaction();
                     ft.show(fragment);
                     ft.commitAllowingStateLoss();
                     fm.executePendingTransactions();
+                }
+            }
+
+            // 4.如果需要在切换后移除自身
+            if (needKills.length > 0) {
+                for (Class needKill : needKills) {
+                    if (Fragment.class.isAssignableFrom(needKill)) {
+                        Handler handler = new Handler();
+                        handler.postDelayed(() -> remove(needKill), 1);
+                    }
                 }
             }
 
