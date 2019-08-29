@@ -456,6 +456,7 @@ public abstract class RootFrag extends Fragment implements FragmentBackHandler {
         if (timerState == TimerState.OFF_ALL_BUT_KEEP_CURRENT // 关闭全部(但不包含当前)
                     | timerState == TimerState.ON // 开启
                     | timerState == TimerState.ON_BUT_OFF_WHEN_PAUSE // 开启但pause要停止
+                    | timerState == TimerState.ON_BUT_OFF_WHEN_HIDE_AND_PAUSE // 开启但pause以及hide的时候要停止
                     | timerState == TimerState.OFF_ALL_BUT_KEEP_CURRENT_OFF_WHEN_PAUSE // 关闭全部(但不包含当前) 但pause时停止当前
         ) {
             // 2.创建新的定时器
