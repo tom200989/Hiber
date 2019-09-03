@@ -18,8 +18,6 @@ import com.hiber.tools.ToastUtil;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.Timer;
-import java.util.TimerTask;
 
 /**
  * Created by qianli.ma on 2018/7/24 0024.
@@ -55,7 +53,7 @@ public class RootHelper {
             if (isNotificationOpen(context)) {// 系统通知开启 -- 使用系统吐司
                 setToastSytem(Toast.makeText(context, tip, Toast.LENGTH_LONG), duration);
             } else {// 否则使用自定义吐司
-                ToastUtil.showSelfToast((RootMAActivity) context,tip, duration);
+                ToastUtil.showSelfToast((RootMAActivity) context, tip, duration);
             }
         } else {
             RootMAActivity activity = (RootMAActivity) context;
@@ -63,7 +61,7 @@ public class RootHelper {
                 if (isNotificationOpen(context)) {// 系统通知开启 -- 使用系统吐司
                     setToastSytem(Toast.makeText(context, tip, Toast.LENGTH_LONG), duration);
                 } else {// 否则使用自定义吐司
-                    ToastUtil.showSelfToast((RootMAActivity) context,tip, duration);
+                    ToastUtil.showSelfToast((RootMAActivity) context, tip, duration);
                 }
             });
         }
@@ -76,20 +74,22 @@ public class RootHelper {
      * @param duration 时长
      */
     private static void setToastSytem(Toast toast, int duration) {
-        final Timer timer = new Timer();
-        timer.schedule(new TimerTask() {
-            @Override
-            public void run() {
-                toast.show();
-            }
-        }, 0, 2000);
-        new Timer().schedule(new TimerTask() {
-            @Override
-            public void run() {
-                toast.cancel();
-                timer.cancel();
-            }
-        }, duration);
+        toast.show();
+        // TOGO 2019/9/3 0003 以下代码备用, 以免有产品需求是要求延长toast时长
+        // final Timer timer = new Timer();
+        // timer.schedule(new TimerTask() {
+        //     @Override
+        //     public void run() {
+        //         toast.show();
+        //     }
+        // }, 0, 7000);
+        // new Timer().schedule(new TimerTask() {
+        //     @Override
+        //     public void run() {
+        //         toast.cancel();
+        //         timer.cancel();
+        //     }
+        // }, duration);
     }
 
     /**
