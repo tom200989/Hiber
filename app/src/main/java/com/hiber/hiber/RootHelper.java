@@ -57,7 +57,7 @@ public class RootHelper {
         String type = isSystem ? "系统" : "自定义";
         String frag = whichPage.getSimpleName();
         StringBuilder builder = new StringBuilder();
-        builder.append("\n");
+        builder.append("RootLog\n");
         builder.append("--------------------------- 吐司定位 ---------------------------").append("\n");
         builder.append("Type: ").append(type).append("\n");
         builder.append("page: ").append(frag).append("\n");
