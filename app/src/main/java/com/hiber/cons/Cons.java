@@ -11,6 +11,16 @@ public class Cons {
     public static String TAG = "Hiber";// 日志标记
 
     /**
+     * 用于定位页面跳转行为
+     */
+    public static String TRACK = "RootTrack";// 流程标记
+
+    /**
+     * 用于定位弹出吐司的界面定位
+     */
+    public static String TOAST = "RootToast";// 吐司定位标记
+
+    /**
      * 权限流程标记
      */
     public static String TAG2 = "PermissW";// 权限流程标记

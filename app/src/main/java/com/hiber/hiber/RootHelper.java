@@ -12,6 +12,7 @@ import android.os.Process;
 import android.widget.Toast;
 
 import com.hiber.bean.SkipBean;
+import com.hiber.cons.Cons;
 import com.hiber.tools.Lgg;
 import com.hiber.tools.ToastUtil;
 
@@ -23,6 +24,8 @@ import java.lang.reflect.Method;
  * Created by qianli.ma on 2018/7/24 0024.
  */
 public class RootHelper {
+
+    private final String TAG = Cons.TOAST;
 
     /**
      * kill app
@@ -36,32 +39,59 @@ public class RootHelper {
      *
      * @param tip      提示
      * @param duration 时长
+     * @param page     由哪个fragment或者Activity弹出
      */
-    protected static void toast(Context context, String tip, int duration) {
-        show(context, tip, duration);
+    protected static void toast(Context context, String tip, int duration, Class page) {
+        show(context, tip, duration, page);
+    }
+
+    /**
+     * 吐司定位
+     *
+     * @param isSystem  是否为系统打印
+     * @param whichPage 哪个页面打印的
+     * @param content   内容是什么
+     */
+    private static void toastPos(boolean isSystem, Class whichPage, String content) {
+        String type = isSystem ? "系统" : "自定义";
+        String frag = whichPage.getSimpleName();
+        StringBuilder builder = new StringBuilder();
+        builder.append("\n");
+        builder.append("--------------------------- 吐司定位 ---------------------------");
+        builder.append("Type: ").append(type);
+        builder.append("page: ").append(frag);
+        builder.append("content: ").append(content);
+        builder.append("\n");
+        builder.append("----------------------------------------------------------------");
+        builder.append("\n");
     }
 
     /**
      * @param context  环境
      * @param tip      提示
      * @param duration 时长
+     * @param page     由哪个fragment或者Activity弹出
      */
     @SuppressLint("ShowToast")
-    private static void show(Context context, String tip, int duration) {
+    private static void show(Context context, String tip, int duration, Class page) {
         String threadName = Thread.currentThread().getName();
         if (threadName.equalsIgnoreCase("main")) {
             if (isNotificationOpen(context)) {// 系统通知开启 -- 使用系统吐司
                 setToastSytem(Toast.makeText(context, tip, Toast.LENGTH_LONG), duration);
+                toastPos(true, page, tip);
             } else {// 否则使用自定义吐司
                 ToastUtil.showSelfToast((RootMAActivity) context, tip, duration);
+                toastPos(false, page, tip);
             }
         } else {
             RootMAActivity activity = (RootMAActivity) context;
             activity.runOnUiThread(() -> {
                 if (isNotificationOpen(context)) {// 系统通知开启 -- 使用系统吐司
                     setToastSytem(Toast.makeText(context, tip, Toast.LENGTH_LONG), duration);
+                    toastPos(true, page, tip);
                 } else {// 否则使用自定义吐司
                     ToastUtil.showSelfToast((RootMAActivity) context, tip, duration);
+                    toastPos(false, page, tip);
                 }
             });
         }

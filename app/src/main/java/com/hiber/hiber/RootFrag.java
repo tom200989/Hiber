@@ -834,7 +834,7 @@ public abstract class RootFrag extends Fragment implements FragmentBackHandler {
     public void toast(String tip, int duration) {
         RootMAActivity activity = (RootMAActivity) getActivity();
         if (activity != null) {
-            activity.toast(tip, duration);
+            activity.toast(tip, duration, getClass());
         } else {
             Lgg.t(Cons.TAG).ee("RootHiber--> toast() error: RootMAActivity is null");
         }
@@ -849,7 +849,7 @@ public abstract class RootFrag extends Fragment implements FragmentBackHandler {
     public void toast(@StringRes int tip, int duration) {
         RootMAActivity activity = (RootMAActivity) getActivity();
         if (activity != null) {
-            activity.toast(tip, duration);
+            activity.toast(tip, duration, getClass());
         } else {
             Lgg.t(Cons.TAG).ee("RootHiber--> toast() error: RootMAActivity is null");
         }

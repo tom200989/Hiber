@@ -72,6 +72,11 @@ public abstract class RootMAActivity extends FragmentActivity {
     public String TAG = Cons.TAG;
 
     /**
+     * 流程标记
+     */
+    public String TRACK = Cons.TRACK;
+
+    /**
      * 状态栏颜色ID 如:R.color.xxx
      */
     private int colorStatusBar = R.color.colorHiberAccent;
@@ -719,6 +724,86 @@ public abstract class RootMAActivity extends FragmentActivity {
         }
     }
 
+    /**
+     * 追踪流程(Fragment)
+     *
+     * @param classWhichFragmentStart 由哪个界面跳转
+     * @param targetFragmentClass     跳到哪里去
+     * @param attach                  什么类型附件
+     * @param isTargetReload          是否重置目标
+     * @param needkills               跳转后被杀死的fragment
+     */
+    private void trackFragment(Class classWhichFragmentStart, Class targetFragmentClass, Object attach, boolean isTargetReload, Class... needkills) {
+        StringBuilder builder = new StringBuilder();
+        builder.append("\n");
+        builder.append("------------------------------ 跳转流程 ------------------------------");
+        builder.append("----- from: ").append(classWhichFragmentStart.getSimpleName());
+        builder.append("----- to: ").append(targetFragmentClass.getSimpleName());
+        builder.append("----- attach: ").append(attach != null ? attach.getClass().getSimpleName() : "Null");
+        builder.append("----- isTargetReload: ").append(String.valueOf(isTargetReload));
+        builder.append("----- kill: ").append(needkills != null && needkills.length > 0 ? needkills[0].getSimpleName() : "Null");
+        builder.append("\n");
+        builder.append("----------------------------------------------------------------------");
+        builder.append("\n");
+        Lgg.w(TRACK, builder.toString());
+        Lgg.w(TAG, builder.toString());
+    }
+
+    /**
+     * 追踪流程(Activity)
+     *
+     * @param current        由哪个界面跳转
+     * @param targetAC       跳转到哪个Activity
+     * @param target         跳到哪里去
+     * @param attach         什么类型附件
+     * @param isTargetReload 是否重置目标
+     * @param needKills      跳转后被杀死的fragment
+     */
+    private void trackActivity(Class current, Class targetAC, Class target, Object attach, boolean isTargetReload, Class... needKills) {
+        StringBuilder builder = new StringBuilder();
+        builder.append("\n");
+        builder.append("------------------------------ 跳转流程 ------------------------------");
+        builder.append("----- from: ").append(current.getSimpleName());
+        builder.append("----- targetAc: ").append(targetAC.getSimpleName());
+        builder.append("----- to: ").append(target.getSimpleName());
+        builder.append("----- attach: ").append(attach != null ? attach.getClass().getSimpleName() : "Null");
+        builder.append("----- isTargetReload: ").append(String.valueOf(isTargetReload));
+        builder.append("----- kill: ").append(needKills != null && needKills.length > 0 ? needKills[0].getSimpleName() : "Null");
+        builder.append("\n");
+        builder.append("----------------------------------------------------------------------");
+        builder.append("\n");
+        Lgg.w(TRACK, builder.toString());
+        Lgg.w(TAG, builder.toString());
+    }
+
+    /**
+     * 追踪流程(Module)
+     *
+     * @param current        由哪个界面跳转
+     * @param activityClass  跳转到哪个Activity
+     * @param target         跳到哪里去
+     * @param attach         什么类型附件
+     * @param isTargetReload 是否重置目标
+     * @param needKills      跳转后被杀死的fragment
+     */
+    private void trackModule(Class current, String activityClass, String target, Object attach, boolean isTargetReload, Class... needKills) {
+        StringBuilder builder = new StringBuilder();
+        builder.append("\n");
+        builder.append("------------------------------ 跳转流程 ------------------------------");
+        builder.append("----- from: ").append(current.getSimpleName());
+        builder.append("----- targetAc: ").append(activityClass);
+        builder.append("----- to: ").append(target);
+        builder.append("----- attach: ").append(attach != null ? attach.getClass().getSimpleName() : "Null");
+        builder.append("----- isTargetReload: ").append(String.valueOf(isTargetReload));
+        builder.append("----- kill: ").append(needKills != null && needKills.length > 0 ? needKills[0].getSimpleName() : "Null");
+        builder.append("\n");
+        builder.append("----------------------------------------------------------------------");
+        builder.append("\n");
+        Lgg.w(TRACK, builder.toString());
+        Lgg.w(TAG, builder.toString());
+    }
+
+
     /* -------------------------------------------- public method -------------------------------------------- */
 
     /**
@@ -753,6 +838,8 @@ public abstract class RootMAActivity extends FragmentActivity {
         // 2.先跳转
         fraHelpers.transfer(fragBean.getTargetFragmentClass(), isTargetReload, needkills);
         EventBus.getDefault().postSticky(fragBean);
+        // 3.追踪流程
+        trackFragment(classWhichFragmentStart, targetFragmentClass, attach, isTargetReload, needkills);
     }
 
     /**
@@ -808,6 +895,8 @@ public abstract class RootMAActivity extends FragmentActivity {
         if (needKills.length > 0) {
             killWhich(needKills);
         }
+        // 追踪流程
+        trackActivity(current, targetAC, target, attach, isTargetReload, needKills);
     }
 
     /**
@@ -842,6 +931,8 @@ public abstract class RootMAActivity extends FragmentActivity {
         if (needKills.length > 0) {
             killWhich(needKills);
         }
+        // 追踪流程
+        trackActivity(current, targetAC, target, attach, isTargetReload, needKills);
     }
 
     /**
@@ -880,6 +971,8 @@ public abstract class RootMAActivity extends FragmentActivity {
         if (needKills.length > 0) {
             killWhich(needKills);
         }
+        // 追踪流程
+        trackModule(current, activityClass, target, attach, isTargetReload, needKills);
     }
 
     /**
@@ -920,6 +1013,8 @@ public abstract class RootMAActivity extends FragmentActivity {
         if (needKills.length > 0) {
             killWhich(needKills);
         }
+        // 追踪流程
+        trackModule(current, activityClass, target, attach, isTargetReload, needKills);
     }
 
     /**
@@ -964,9 +1059,16 @@ public abstract class RootMAActivity extends FragmentActivity {
      *
      * @param tip      提示
      * @param duration 时长
+     * @param page     由哪个fragment或者Activity弹出
      */
-    public void toast(String tip, int duration) {
-        RootHelper.toast(this, tip, duration);
+    public void toast(String tip, int duration, Class... page) {
+        Class clazz = getClass();// 默认Activity
+        if (page != null) {
+            if (page.length > 0) {
+                clazz = page[0];
+            }
+        }
+        RootHelper.toast(this, tip, duration, clazz);
     }
 
     /**
@@ -974,9 +1076,16 @@ public abstract class RootMAActivity extends FragmentActivity {
      *
      * @param stringId 字符资源ID
      * @param duration 时长
+     * @param page     由哪个fragment或者Activity弹出
      */
-    public void toast(@StringRes int stringId, int duration) {
-        RootHelper.toast(this, getString(stringId), duration);
+    public void toast(@StringRes int stringId, int duration, Class... page) {
+        Class clazz = getClass();// 默认Activity
+        if (page != null) {
+            if (page.length > 0) {
+                clazz = page[0];
+            }
+        }
+        RootHelper.toast(this, getString(stringId), duration, clazz);
     }
 
     /**
