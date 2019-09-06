@@ -25,7 +25,8 @@ import java.lang.reflect.Method;
  */
 public class RootHelper {
 
-    private final String TAG = Cons.TOAST;
+    private static final String TAG1 = Cons.TAG;
+    private static final String TOAST_TAG = Cons.TOAST;
 
     /**
      * kill app
@@ -57,13 +58,14 @@ public class RootHelper {
         String frag = whichPage.getSimpleName();
         StringBuilder builder = new StringBuilder();
         builder.append("\n");
-        builder.append("--------------------------- 吐司定位 ---------------------------");
-        builder.append("Type: ").append(type);
-        builder.append("page: ").append(frag);
-        builder.append("content: ").append(content);
-        builder.append("\n");
+        builder.append("--------------------------- 吐司定位 ---------------------------").append("\n");
+        builder.append("Type: ").append(type).append("\n");
+        builder.append("page: ").append(frag).append("\n");
+        builder.append("content: ").append(content).append("\n");
         builder.append("----------------------------------------------------------------");
         builder.append("\n");
+        Lgg.w(TAG1, builder.toString());
+        Lgg.w(TOAST_TAG, builder.toString());
     }
 
     /**

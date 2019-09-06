@@ -736,13 +736,12 @@ public abstract class RootMAActivity extends FragmentActivity {
     private void trackFragment(Class classWhichFragmentStart, Class targetFragmentClass, Object attach, boolean isTargetReload, Class... needkills) {
         StringBuilder builder = new StringBuilder();
         builder.append("\n");
-        builder.append("------------------------------ 跳转流程 ------------------------------");
-        builder.append("----- from: ").append(classWhichFragmentStart.getSimpleName());
-        builder.append("----- to: ").append(targetFragmentClass.getSimpleName());
-        builder.append("----- attach: ").append(attach != null ? attach.getClass().getSimpleName() : "Null");
-        builder.append("----- isTargetReload: ").append(String.valueOf(isTargetReload));
-        builder.append("----- kill: ").append(needkills != null && needkills.length > 0 ? needkills[0].getSimpleName() : "Null");
-        builder.append("\n");
+        builder.append("------------------------------ 跳转流程 ------------------------------").append("\n");
+        builder.append("----- from: ").append(classWhichFragmentStart.getSimpleName()).append("\n");
+        builder.append("----- to: ").append(targetFragmentClass.getSimpleName()).append("\n");
+        builder.append("----- attach: ").append(attach != null ? attach.getClass().getSimpleName() : "Null").append("\n");
+        builder.append("----- isTargetReload: ").append(String.valueOf(isTargetReload)).append("\n");
+        builder.append("----- kill: ").append(needkills != null && needkills.length > 0 ? needkills[0].getSimpleName() : "Null").append("\n");
         builder.append("----------------------------------------------------------------------");
         builder.append("\n");
         Lgg.w(TRACK, builder.toString());
@@ -762,14 +761,13 @@ public abstract class RootMAActivity extends FragmentActivity {
     private void trackActivity(Class current, Class targetAC, Class target, Object attach, boolean isTargetReload, Class... needKills) {
         StringBuilder builder = new StringBuilder();
         builder.append("\n");
-        builder.append("------------------------------ 跳转流程 ------------------------------");
-        builder.append("----- from: ").append(current.getSimpleName());
-        builder.append("----- targetAc: ").append(targetAC.getSimpleName());
-        builder.append("----- to: ").append(target.getSimpleName());
-        builder.append("----- attach: ").append(attach != null ? attach.getClass().getSimpleName() : "Null");
-        builder.append("----- isTargetReload: ").append(String.valueOf(isTargetReload));
-        builder.append("----- kill: ").append(needKills != null && needKills.length > 0 ? needKills[0].getSimpleName() : "Null");
-        builder.append("\n");
+        builder.append("------------------------------ 跳转流程 ------------------------------").append("\n");
+        builder.append("----- from: ").append(current.getSimpleName()).append("\n");
+        builder.append("----- targetAc: ").append(targetAC.getSimpleName()).append("\n");
+        builder.append("----- to: ").append(target.getSimpleName()).append("\n");
+        builder.append("----- attach: ").append(attach != null ? attach.getClass().getSimpleName() : "Null").append("\n");
+        builder.append("----- isTargetReload: ").append(String.valueOf(isTargetReload)).append("\n");
+        builder.append("----- kill: ").append(needKills != null && needKills.length > 0 ? needKills[0].getSimpleName() : "Null").append("\n");
         builder.append("----------------------------------------------------------------------");
         builder.append("\n");
         Lgg.w(TRACK, builder.toString());
@@ -789,14 +787,13 @@ public abstract class RootMAActivity extends FragmentActivity {
     private void trackModule(Class current, String activityClass, String target, Object attach, boolean isTargetReload, Class... needKills) {
         StringBuilder builder = new StringBuilder();
         builder.append("\n");
-        builder.append("------------------------------ 跳转流程 ------------------------------");
-        builder.append("----- from: ").append(current.getSimpleName());
-        builder.append("----- targetAc: ").append(activityClass);
-        builder.append("----- to: ").append(target);
-        builder.append("----- attach: ").append(attach != null ? attach.getClass().getSimpleName() : "Null");
-        builder.append("----- isTargetReload: ").append(String.valueOf(isTargetReload));
-        builder.append("----- kill: ").append(needKills != null && needKills.length > 0 ? needKills[0].getSimpleName() : "Null");
-        builder.append("\n");
+        builder.append("------------------------------ 跳转流程 ------------------------------").append("\n");
+        builder.append("----- from: ").append(current.getSimpleName()).append("\n");
+        builder.append("----- targetAc: ").append(activityClass).append("\n");
+        builder.append("----- to: ").append(target).append("\n");
+        builder.append("----- attach: ").append(attach != null ? attach.getClass().getSimpleName() : "Null").append("\n");
+        builder.append("----- isTargetReload: ").append(String.valueOf(isTargetReload)).append("\n");
+        builder.append("----- kill: ").append(needKills != null && needKills.length > 0 ? needKills[0].getSimpleName() : "Null").append("\n");
         builder.append("----------------------------------------------------------------------");
         builder.append("\n");
         Lgg.w(TRACK, builder.toString());
