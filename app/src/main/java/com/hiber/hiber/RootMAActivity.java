@@ -11,6 +11,7 @@ import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.annotation.StringRes;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
@@ -145,6 +146,11 @@ public abstract class RootMAActivity extends FragmentActivity {
      * Eventbus 数据回调监听器集合
      */
     protected List<RootEventListener> eventListeners = new ArrayList<>();
+
+    /**
+     * 用于辅助framgent -- 防止fragment跳转过快导致的事务没及时提交
+     */
+    protected Handler handler = new Handler();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -813,30 +819,32 @@ public abstract class RootMAActivity extends FragmentActivity {
      * @param needkills               跳转前需要杀死哪些fragment
      */
     public void toFrag(Class classWhichFragmentStart, Class targetFragmentClass, Object attach, boolean isTargetReload, Class... needkills) {
-        // 检测传输目标是否为空
-        if (classWhichFragmentStart == null | targetFragmentClass == null) {
-            toast(getString(R.string.NULL_TIP), 5000);
-            return;
-        }
-        // 检测附件是否实现序列化
-        if (attach != null) {
-            if (!(attach instanceof Serializable)) {
-                String string = getString(R.string.ATTACH_NOT_SERILIZABLE);
-                String format = String.format(string, attach.getClass().getSimpleName());
-                toast(format, 5000);
+        handler.postDelayed(() -> {
+            // 检测传输目标是否为空
+            if (classWhichFragmentStart == null | targetFragmentClass == null) {
+                toast(getString(R.string.NULL_TIP), 5000);
                 return;
             }
-        }
-        RootFrag.whichFragmentStart = classWhichFragmentStart.getSimpleName();
-        // 0.转换并封装传输对象
-        FragBean fragBean = transferFragbean(classWhichFragmentStart, targetFragmentClass, attach);
-        // 1.再传输(否则会出现nullPointException)
-        EventBus.getDefault().removeStickyEvent(FragBean.class);
-        // 2.先跳转
-        fraHelpers.transfer(fragBean.getTargetFragmentClass(), isTargetReload, needkills);
-        EventBus.getDefault().postSticky(fragBean);
-        // 3.追踪流程
-        trackFragment(classWhichFragmentStart, targetFragmentClass, attach, isTargetReload, needkills);
+            // 检测附件是否实现序列化
+            if (attach != null) {
+                if (!(attach instanceof Serializable)) {
+                    String string = getString(R.string.ATTACH_NOT_SERILIZABLE);
+                    String format = String.format(string, attach.getClass().getSimpleName());
+                    toast(format, 5000);
+                    return;
+                }
+            }
+            RootFrag.whichFragmentStart = classWhichFragmentStart.getSimpleName();
+            // 0.转换并封装传输对象
+            FragBean fragBean = transferFragbean(classWhichFragmentStart, targetFragmentClass, attach);
+            // 1.再传输(否则会出现nullPointException)
+            EventBus.getDefault().removeStickyEvent(FragBean.class);
+            // 2.先跳转
+            fraHelpers.transfer(fragBean.getTargetFragmentClass(), isTargetReload, needkills);
+            EventBus.getDefault().postSticky(fragBean);
+            // 3.追踪流程
+            trackFragment(classWhichFragmentStart, targetFragmentClass, attach, isTargetReload, needkills);
+        }, 0);
     }
 
     /**
@@ -853,7 +861,7 @@ public abstract class RootMAActivity extends FragmentActivity {
         Thread ta = new Thread(() -> {
             try {
                 Thread.sleep(delayMilis);
-                runOnUiThread(() -> toFrag(current, target, attach, isTargetReload, needkills));
+                runOnUiThread(() -> handler.postDelayed(() -> toFrag(current, target, attach, isTargetReload, needkills), 0));
             } catch (InterruptedException e) {
                 e.printStackTrace();
                 Lgg.t(Cons.TAG).ee("RootMAActivity error: " + e.getMessage());
@@ -873,27 +881,29 @@ public abstract class RootMAActivity extends FragmentActivity {
      * @param needKills      跳转前需要杀死哪些fragmentF
      */
     public void toFragActivity(Class current, Class targetAC, Class target, Object attach, boolean isTargetReload, Class... needKills) {
-        // 检测传输目标是否为空
-        if (current == null | targetAC == null | target == null) {
-            toast(getString(R.string.NULL_TIP), 5000);
-            return;
-        }
-        // 检测附件是否实现序列化
-        if (attach != null) {
-            if (!(attach instanceof Serializable)) {
-                String string = getString(R.string.ATTACH_NOT_SERILIZABLE);
-                String format = String.format(string, attach.getClass().getSimpleName());
-                toast(format, 5000);
+        handler.postDelayed(() -> {
+            // 检测传输目标是否为空
+            if (current == null | targetAC == null | target == null) {
+                toast(getString(R.string.NULL_TIP), 5000);
                 return;
             }
-        }
-        SkipBean skipbean = getSkipbean(current, targetAC, target, attach, isTargetReload, false);
-        RootHelper.toActivityImplicit(this, skipbean.getTargetActivityClassName(), false, false, false, 0, skipbean);
-        if (needKills.length > 0) {
-            killWhich(needKills);
-        }
-        // 追踪流程
-        trackActivity(current, targetAC, target, attach, isTargetReload, needKills);
+            // 检测附件是否实现序列化
+            if (attach != null) {
+                if (!(attach instanceof Serializable)) {
+                    String string = getString(R.string.ATTACH_NOT_SERILIZABLE);
+                    String format = String.format(string, attach.getClass().getSimpleName());
+                    toast(format, 5000);
+                    return;
+                }
+            }
+            SkipBean skipbean = getSkipbean(current, targetAC, target, attach, isTargetReload, false);
+            RootHelper.toActivityImplicit(this, skipbean.getTargetActivityClassName(), false, false, false, 0, skipbean);
+            if (needKills.length > 0) {
+                killWhich(needKills);
+            }
+            // 追踪流程
+            trackActivity(current, targetAC, target, attach, isTargetReload, needKills);
+        }, 0);
     }
 
     /**
@@ -909,27 +919,29 @@ public abstract class RootMAActivity extends FragmentActivity {
      * @param needKills      跳转前需要杀死哪些fragment
      */
     public void toFragActivity(Class current, Class targetAC, Class target, Object attach, boolean isTargetReload, boolean isFinish, int delay, Class... needKills) {
-        // 检测传输目标是否为空
-        if (current == null | targetAC == null | target == null) {
-            toast(getString(R.string.NULL_TIP), 5000);
-            return;
-        }
-        // 检测附件是否实现序列化
-        if (attach != null) {
-            if (!(attach instanceof Serializable)) {
-                String string = getString(R.string.ATTACH_NOT_SERILIZABLE);
-                String format = String.format(string, attach.getClass().getSimpleName());
-                toast(format, 5000);
+        handler.postDelayed(() -> {
+            // 检测传输目标是否为空
+            if (current == null | targetAC == null | target == null) {
+                toast(getString(R.string.NULL_TIP), 5000);
                 return;
             }
-        }
-        SkipBean skipbean = getSkipbean(current, targetAC, target, attach, isTargetReload, isFinish);
-        RootHelper.toActivityImplicit(this, skipbean.getTargetActivityClassName(), false, isFinish, false, delay, skipbean);
-        if (needKills.length > 0) {
-            killWhich(needKills);
-        }
-        // 追踪流程
-        trackActivity(current, targetAC, target, attach, isTargetReload, needKills);
+            // 检测附件是否实现序列化
+            if (attach != null) {
+                if (!(attach instanceof Serializable)) {
+                    String string = getString(R.string.ATTACH_NOT_SERILIZABLE);
+                    String format = String.format(string, attach.getClass().getSimpleName());
+                    toast(format, 5000);
+                    return;
+                }
+            }
+            SkipBean skipbean = getSkipbean(current, targetAC, target, attach, isTargetReload, isFinish);
+            RootHelper.toActivityImplicit(this, skipbean.getTargetActivityClassName(), false, isFinish, false, delay, skipbean);
+            if (needKills.length > 0) {
+                killWhich(needKills);
+            }
+            // 追踪流程
+            trackActivity(current, targetAC, target, attach, isTargetReload, needKills);
+        }, 0);
     }
 
     /**
@@ -943,33 +955,35 @@ public abstract class RootMAActivity extends FragmentActivity {
      * @param needKills      跳转前需要杀死哪些fragment
      */
     public void toFragModule(Class current, String activityClass, String target, Object attach, boolean isTargetReload, Class... needKills) {
-        // 检测传输目标是否为空
-        if (current == null | activityClass == null | target == null) {
-            toast(getString(R.string.NULL_TIP), 5000);
-            return;
-        }
-        // 检测附件是否实现序列化
-        if (attach != null) {
-            if (!(attach instanceof Serializable)) {
-                String string = getString(R.string.ATTACH_NOT_SERILIZABLE);
-                String format = String.format(string, attach.getClass().getSimpleName());
-                toast(format, 5000);
+        handler.postDelayed(() -> {
+            // 检测传输目标是否为空
+            if (current == null | activityClass == null | target == null) {
+                toast(getString(R.string.NULL_TIP), 5000);
                 return;
             }
-        }
-        SkipBean skipbean = new SkipBean();
-        skipbean.setCurrentFragmentClassName(current.getName());
-        skipbean.setTargetActivityClassName(activityClass);
-        skipbean.setTargetFragmentClassName(target);
-        skipbean.setAttach(attach);
-        skipbean.setTargetReload(isTargetReload);
-        skipbean.setCurrentACFinish(false);
-        RootHelper.toActivityImplicit(this, activityClass, false, false, false, 0, skipbean);
-        if (needKills.length > 0) {
-            killWhich(needKills);
-        }
-        // 追踪流程
-        trackModule(current, activityClass, target, attach, isTargetReload, needKills);
+            // 检测附件是否实现序列化
+            if (attach != null) {
+                if (!(attach instanceof Serializable)) {
+                    String string = getString(R.string.ATTACH_NOT_SERILIZABLE);
+                    String format = String.format(string, attach.getClass().getSimpleName());
+                    toast(format, 5000);
+                    return;
+                }
+            }
+            SkipBean skipbean = new SkipBean();
+            skipbean.setCurrentFragmentClassName(current.getName());
+            skipbean.setTargetActivityClassName(activityClass);
+            skipbean.setTargetFragmentClassName(target);
+            skipbean.setAttach(attach);
+            skipbean.setTargetReload(isTargetReload);
+            skipbean.setCurrentACFinish(false);
+            RootHelper.toActivityImplicit(this, activityClass, false, false, false, 0, skipbean);
+            if (needKills.length > 0) {
+                killWhich(needKills);
+            }
+            // 追踪流程
+            trackModule(current, activityClass, target, attach, isTargetReload, needKills);
+        }, 0);
     }
 
     /**
@@ -985,33 +999,35 @@ public abstract class RootMAActivity extends FragmentActivity {
      * @param needKills      跳转前需要杀死哪些fragment
      */
     public void toFragModule(Class current, String activityClass, String target, Object attach, boolean isTargetReload, boolean isFinish, int delay, Class... needKills) {
-        // 检测传输目标是否为空
-        if (current == null | activityClass == null | target == null) {
-            toast(getString(R.string.NULL_TIP), 5000);
-            return;
-        }
-        // 检测附件是否实现序列化
-        if (attach != null) {
-            if (!(attach instanceof Serializable)) {
-                String string = getString(R.string.ATTACH_NOT_SERILIZABLE);
-                String format = String.format(string, attach.getClass().getSimpleName());
-                toast(format, 5000);
+        handler.postDelayed(() -> {
+            // 检测传输目标是否为空
+            if (current == null | activityClass == null | target == null) {
+                toast(getString(R.string.NULL_TIP), 5000);
                 return;
             }
-        }
-        SkipBean skipbean = new SkipBean();
-        skipbean.setCurrentFragmentClassName(current.getName());
-        skipbean.setTargetActivityClassName(activityClass);
-        skipbean.setTargetFragmentClassName(target);
-        skipbean.setAttach(attach);
-        skipbean.setTargetReload(isTargetReload);
-        skipbean.setCurrentACFinish(false);
-        RootHelper.toActivityImplicit(this, activityClass, false, isFinish, false, delay, skipbean);
-        if (needKills.length > 0) {
-            killWhich(needKills);
-        }
-        // 追踪流程
-        trackModule(current, activityClass, target, attach, isTargetReload, needKills);
+            // 检测附件是否实现序列化
+            if (attach != null) {
+                if (!(attach instanceof Serializable)) {
+                    String string = getString(R.string.ATTACH_NOT_SERILIZABLE);
+                    String format = String.format(string, attach.getClass().getSimpleName());
+                    toast(format, 5000);
+                    return;
+                }
+            }
+            SkipBean skipbean = new SkipBean();
+            skipbean.setCurrentFragmentClassName(current.getName());
+            skipbean.setTargetActivityClassName(activityClass);
+            skipbean.setTargetFragmentClassName(target);
+            skipbean.setAttach(attach);
+            skipbean.setTargetReload(isTargetReload);
+            skipbean.setCurrentACFinish(false);
+            RootHelper.toActivityImplicit(this, activityClass, false, isFinish, false, delay, skipbean);
+            if (needKills.length > 0) {
+                killWhich(needKills);
+            }
+            // 追踪流程
+            trackModule(current, activityClass, target, attach, isTargetReload, needKills);
+        }, 0);
     }
 
     /**
