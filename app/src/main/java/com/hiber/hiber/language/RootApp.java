@@ -3,6 +3,7 @@ package com.hiber.hiber.language;
 import android.app.Activity;
 import android.content.Context;
 import android.content.res.Configuration;
+import android.os.StrictMode;
 import android.support.multidex.MultiDexApplication;
 
 import com.hiber.hiber.ActivityHelper;
@@ -31,6 +32,17 @@ public class RootApp extends MultiDexApplication {
         crashHelper.setCrash(this);
         // 初始化Activity统一管理
         initActicityLife();
+        // 兼容调起摄像头--android 7.0以上系统解决拍照的问题
+        impactCamera();
+    }
+
+    /**
+     * 兼容调起摄像头--android 7.0以上系统解决拍照的问题
+     */
+    private void impactCamera() {
+        StrictMode.VmPolicy.Builder builder = new StrictMode.VmPolicy.Builder();
+        StrictMode.setVmPolicy(builder.build());
+        builder.detectFileUriExposure();
     }
 
     /**
