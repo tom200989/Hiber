@@ -80,20 +80,28 @@ public class RootHelper {
         if (threadName.equalsIgnoreCase("main")) {
             if (isNotificationOpen(context)) {// 系统通知开启 -- 使用系统吐司
                 setToastSytem(Toast.makeText(context, tip, Toast.LENGTH_LONG), duration);
-                toastPos(true, page, tip);
+                if (((RootMAActivity) context).TF_LOG) {// 外部是否需要关闭定位
+                    toastPos(true, page, tip);
+                }
             } else {// 否则使用自定义吐司
                 ToastUtil.showSelfToast((RootMAActivity) context, tip, duration);
-                toastPos(false, page, tip);
+                if (((RootMAActivity) context).TF_LOG) {// 外部是否需要关闭定位
+                    toastPos(false, page, tip);
+                }
             }
         } else {
             RootMAActivity activity = (RootMAActivity) context;
             activity.runOnUiThread(() -> {
                 if (isNotificationOpen(context)) {// 系统通知开启 -- 使用系统吐司
                     setToastSytem(Toast.makeText(context, tip, Toast.LENGTH_LONG), duration);
-                    toastPos(true, page, tip);
+                    if (((RootMAActivity) context).TF_LOG) {// 外部是否需要关闭定位
+                        toastPos(true, page, tip);
+                    }
                 } else {// 否则使用自定义吐司
                     ToastUtil.showSelfToast((RootMAActivity) context, tip, duration);
-                    toastPos(false, page, tip);
+                    if (((RootMAActivity) context).TF_LOG) {// 外部是否需要关闭定位
+                        toastPos(false, page, tip);
+                    }
                 }
             });
         }
