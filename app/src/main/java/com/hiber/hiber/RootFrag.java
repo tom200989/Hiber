@@ -3,7 +3,6 @@ package com.hiber.hiber;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.graphics.drawable.Drawable;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.ColorRes;
@@ -113,12 +112,6 @@ public abstract class RootFrag extends Fragment implements FragmentBackHandler {
         layoutId = onInflateLayout();
         // 2.填充视图
         inflateView = View.inflate(activity, layoutId, null);
-        // 2.1.版本大于19 -- 则默认关闭硬件加速
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-            if (!isOpenAccerateHardcore()) {// 外部是否指定关闭?
-                inflateView.setLayerType(View.LAYER_TYPE_SOFTWARE, null);// 关闭
-            }
-        }
         // 3.绑定butterknife
         unbinder = ButterKnife.bind(this, inflateView);
         // 4.加载完视图后的操作--> 由子类重写
@@ -588,13 +581,6 @@ public abstract class RootFrag extends Fragment implements FragmentBackHandler {
      */
     public void initViewFinish(View inflateView) {
 
-    }
-
-    /**
-     * @return 是否打开硬件加速
-     */
-    public boolean isOpenAccerateHardcore() {
-        return false;
     }
 
     /**

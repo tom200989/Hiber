@@ -152,11 +152,6 @@ public abstract class RootMAActivity extends FragmentActivity {
      */
     protected Handler handler = new Handler();
 
-    /**
-     * 开启|关闭吐司日志,页面跳转轨迹日志
-     */
-    public boolean TF_LOG = true;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -745,7 +740,7 @@ public abstract class RootMAActivity extends FragmentActivity {
      * @param needkills               跳转后被杀死的fragment
      */
     private void trackFragment(Class classWhichFragmentStart, Class targetFragmentClass, Object attach, boolean isTargetReload, Class... needkills) {
-        if (TF_LOG) {
+        if (Lgg.LOG_FLAG == Lgg.SHOW_ALL) {
             StringBuilder builder = new StringBuilder();
             builder.append("RootLog\n");
             builder.append("------------------------------ 跳转流程 ------------------------------").append("\n");
@@ -772,7 +767,7 @@ public abstract class RootMAActivity extends FragmentActivity {
      * @param needKills      跳转后被杀死的fragment
      */
     private void trackActivity(Class current, Class targetAC, Class target, Object attach, boolean isTargetReload, Class... needKills) {
-        if (TF_LOG) {
+        if (Lgg.LOG_FLAG == Lgg.SHOW_ALL) {
             StringBuilder builder = new StringBuilder();
             builder.append("RootLog\n");
             builder.append("------------------------------ 跳转流程 ------------------------------").append("\n");
@@ -800,7 +795,7 @@ public abstract class RootMAActivity extends FragmentActivity {
      * @param needKills      跳转后被杀死的fragment
      */
     private void trackModule(Class current, String activityClass, String target, Object attach, boolean isTargetReload, Class... needKills) {
-        if (TF_LOG) {
+        if (Lgg.LOG_FLAG == Lgg.SHOW_ALL) {
             StringBuilder builder = new StringBuilder();
             builder.append("RootLog\n");
             builder.append("------------------------------ 跳转流程 ------------------------------").append("\n");
@@ -816,7 +811,6 @@ public abstract class RootMAActivity extends FragmentActivity {
             Lgg.w(TAG, builder.toString());
         }
     }
-
 
     /* -------------------------------------------- public method -------------------------------------------- */
 
