@@ -23,6 +23,7 @@ import android.view.Window;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import com.alibaba.fastjson.JSONObject;
 import com.hiber.bean.RootProperty;
 import com.hiber.bean.SkipBean;
 import com.hiber.cons.Cons;
@@ -378,8 +379,15 @@ public abstract class RootMAActivity extends FragmentActivity {
         Serializable extra = intent.getSerializableExtra(INTENT_NAME);
         // 0.1.序列为空(启动APP初始化时)
         if (extra == null) {
-            // 0.2.初始化第一个
-            initFragment(0, "");
+            SkipBean skipBean = getBeanPassByte(intent);
+            if (skipBean == null) {
+                // 0.2.初始化第一个
+                initFragment(0, "");
+            } else {
+                // 0.3.当推送过来或者跳转过来时, 处理数据
+                hadData(skipBean);
+            }
+
         } else {
             // 0.2.判断开发是否传递错误参数
             boolean isSkipbeanType = extra instanceof SkipBean;
@@ -390,25 +398,51 @@ public abstract class RootMAActivity extends FragmentActivity {
 
             // 1.正常获取到skipbean并检测attach是否实现了序列化
             SkipBean skipBean = (SkipBean) extra;
-            // 2.判断是否为自身AC
-            String currentActivityClassName = getClass().getName();
-            String targetActivityClassName = skipBean.getTargetActivityClassName();
-            if (targetActivityClassName.equalsIgnoreCase(currentActivityClassName)) {
-                // 是自身AC
-                Class targetFragClass = searchFragClassByName(skipBean.getTargetFragmentClassName());
-                int classFragIndex = searchFragIndexByClass(targetFragClass);
-                Object attach = skipBean.getAttach();
-                initFragment(classFragIndex, attach);
-            } else {
-                // 不是自身AC(推送)
-                Activity activity = this;
-                boolean isSingleTop = false;
-                boolean isFinish = false;
-                boolean isOverridePending = false;
-                int delay = 0;
-                RootHelper.toActivityImplicit(activity, targetActivityClassName, isSingleTop, isFinish, isOverridePending, delay, skipBean);
-            }
+            // 2.当推送过来或者跳转过来时, 处理数据
+            hadData(skipBean);
         }
+    }
+
+    /**
+     * 当推送过来或者跳转过来时, 处理数据
+     *
+     * @param skipBean 数据
+     */
+    private void hadData(SkipBean skipBean) {
+        // 判断是否为自身AC
+        String currentActivityClassName = getClass().getName();
+        String targetActivityClassName = skipBean.getTargetActivityClassName();
+        if (targetActivityClassName.equalsIgnoreCase(currentActivityClassName)) {
+            // 是自身AC
+            Class targetFragClass = searchFragClassByName(skipBean.getTargetFragmentClassName());
+            int classFragIndex = searchFragIndexByClass(targetFragClass);
+            Object attach = skipBean.getAttach();
+            initFragment(classFragIndex, attach);
+        } else {
+            // 不是自身AC(推送)
+            Activity activity = this;
+            boolean isSingleTop = false;
+            boolean isFinish = false;
+            boolean isOverridePending = false;
+            int delay = 0;
+            RootHelper.toActivityImplicit(activity, targetActivityClassName, isSingleTop, isFinish, isOverridePending, delay, skipBean);
+        }
+    }
+
+    /**
+     * 如果是通过推送过来的(推送是BYTE形式),此时序列化必定为空, 则进行byte[]转换
+     *
+     * @param intent 数据对象
+     */
+    private SkipBean getBeanPassByte(Intent intent) {
+        // 获取到传递过来的字节
+        byte[] b_skipbean = intent.getByteArrayExtra(INTENT_NAME);
+        // 判断空值
+        if (b_skipbean != null && b_skipbean.length > 0) {
+            String str = new String(b_skipbean);
+            return JSONObject.parseObject(str, SkipBean.class);
+        }
+        return null;
     }
 
     /**
@@ -1123,7 +1157,10 @@ public abstract class RootMAActivity extends FragmentActivity {
      * @param attach     附件
      * @return skipbean
      */
-    public static SkipBean getPendingIntentValue(String targetAC, String targetFrag, Object attach) {
+    public static byte[] getPendingIntentValue(String targetAC, String targetFrag, Object attach) {
+        if (TextUtils.isEmpty(targetAC) | TextUtils.isEmpty(targetFrag)) {
+            throw new RuntimeException("请检查是否指定了目标Activity或者目标Fragment");
+        }
         SkipBean skipBean = new SkipBean();
         skipBean.setCurrentFragmentClassName("");
         skipBean.setTargetActivityClassName(targetAC);
@@ -1131,7 +1168,7 @@ public abstract class RootMAActivity extends FragmentActivity {
         skipBean.setAttach(attach);
         skipBean.setTargetReload(true);
         skipBean.setCurrentACFinish(false);
-        return skipBean;
+        return JSONObject.toJSONString(skipBean).getBytes();
     }
 
     /**

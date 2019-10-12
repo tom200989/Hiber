@@ -55,4 +55,7 @@ dependencies {
     
     // 开发规范检查
     api(name: 'ma_lint3', ext: 'aar')
+
+    // json解析
+    api 'com.alibaba:fastjson:1.2.61'
 }
