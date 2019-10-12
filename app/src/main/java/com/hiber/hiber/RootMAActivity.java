@@ -379,27 +379,29 @@ public abstract class RootMAActivity extends FragmentActivity {
         Serializable extra = intent.getSerializableExtra(INTENT_NAME);
         // 0.1.序列为空(启动APP初始化时)
         if (extra == null) {
-            SkipBean skipBean = getBeanPassByte(intent);
-            if (skipBean == null) {
-                // 0.2.初始化第一个
-                initFragment(0, "");
-            } else {
-                // 0.3.当推送过来或者跳转过来时, 处理数据
-                hadData(skipBean);
-            }
+            // 0.2.初始化第一个
+            initFragment(0, "");
 
         } else {
             // 0.2.判断开发是否传递错误参数
             boolean isSkipbeanType = extra instanceof SkipBean;
-            if (!isSkipbeanType) {
-                toast(getString(R.string.SKIPBEAN_TIP), 5000);
-                return;
-            }
+            if (!isSkipbeanType) {// 不是跳转过来的skipbean
+                // 如果是推送过来的, 一定是字节
+                if (extra instanceof byte[]) {
+                    SkipBean skipBean = getBeanPassByte(extra);
+                    if (skipBean != null) {
+                        hadData(skipBean);
+                    }
 
-            // 1.正常获取到skipbean并检测attach是否实现了序列化
-            SkipBean skipBean = (SkipBean) extra;
-            // 2.当推送过来或者跳转过来时, 处理数据
-            hadData(skipBean);
+                } else {// 未知数据
+                    toast(getString(R.string.SKIPBEAN_TIP), 5000);
+                }
+            } else {
+                // 1.正常获取到skipbean并检测attach是否实现了序列化
+                SkipBean skipBean = (SkipBean) extra;
+                // 2.当推送过来或者跳转过来时, 处理数据
+                hadData(skipBean);
+            }
         }
     }
 
@@ -432,11 +434,11 @@ public abstract class RootMAActivity extends FragmentActivity {
     /**
      * 如果是通过推送过来的(推送是BYTE形式),此时序列化必定为空, 则进行byte[]转换
      *
-     * @param intent 数据对象
+     * @param extra 数据对象
      */
-    private SkipBean getBeanPassByte(Intent intent) {
+    private SkipBean getBeanPassByte(Serializable extra) {
         // 获取到传递过来的字节
-        byte[] b_skipbean = intent.getByteArrayExtra(INTENT_NAME);
+        byte[] b_skipbean = (byte[]) extra;
         // 判断空值
         if (b_skipbean != null && b_skipbean.length > 0) {
             String str = new String(b_skipbean);
