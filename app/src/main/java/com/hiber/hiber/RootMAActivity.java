@@ -442,7 +442,15 @@ public abstract class RootMAActivity extends FragmentActivity {
         // 判断空值
         if (b_skipbean != null && b_skipbean.length > 0) {
             String str = new String(b_skipbean);
-            return JSONObject.parseObject(str, SkipBean.class);
+            SkipBean skipBean = JSONObject.parseObject(str, SkipBean.class);
+            // 处理附件, 把jsonobject转换成object
+            Object jsonObj = skipBean.getAttach();
+            if (jsonObj instanceof JSONObject) {
+                String attachJson = JSONObject.toJSONString(jsonObj);
+                Object attachObj = JSONObject.parseObject(attachJson, skipBean.getAttachClass());
+                skipBean.setAttach(attachObj);
+            }
+            return skipBean;
         }
         return null;
     }
@@ -1170,6 +1178,7 @@ public abstract class RootMAActivity extends FragmentActivity {
         skipBean.setAttach(attach);
         skipBean.setTargetReload(true);
         skipBean.setCurrentACFinish(false);
+        skipBean.setAttachClass(attach.getClass());
         return JSONObject.toJSONString(skipBean).getBytes();
     }
 

@@ -37,6 +37,19 @@ public class SkipBean implements Serializable {
      */
     private boolean isCurrentACFinish;
 
+    /**
+     * 附件的字节码
+     */
+    private Class attachClass;
+
+    public Class getAttachClass() {
+        return attachClass;
+    }
+
+    public void setAttachClass(Class attachClass) {
+        this.attachClass = attachClass;
+    }
+
     public SkipBean() {
     }
 
