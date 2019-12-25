@@ -174,7 +174,7 @@ public abstract class RootMAActivity extends FragmentActivity {
                     }
 
                     // 4.android 运行版本在 [android 9.0 P] 以下才做规范判断
-                    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.P & isLintCheck) {
+                    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.P & isLintCheck & rootProperty.isSetLint()) {
                         // 4.1.包名检查
                         if (!packageCheck(packageName)) {
                             toast(R.string.PACKAGE_NAME_NOT_MATCH, 5000);
@@ -433,6 +433,7 @@ public abstract class RootMAActivity extends FragmentActivity {
 
     /**
      * 如果是通过推送过来的(推送是BYTE形式),此时序列化必定为空, 则进行byte[]转换
+     * 为了适配某些手机从pendingIntent传递过来的数据有可能为字节类型
      *
      * @param extra 数据对象
      */
@@ -1175,6 +1176,9 @@ public abstract class RootMAActivity extends FragmentActivity {
         skipBean.setCurrentFragmentClassName("");
         skipBean.setTargetActivityClassName(targetAC);
         skipBean.setTargetFragmentClassName(targetFrag);
+        if (attach == null) {
+            attach = new Object();
+        }
         skipBean.setAttach(attach);
         skipBean.setTargetReload(true);
         skipBean.setCurrentACFinish(false);

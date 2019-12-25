@@ -866,6 +866,17 @@ public abstract class RootFrag extends Fragment implements FragmentBackHandler {
     }
 
     /**
+     * 统一获取字符资源 (为了适配android 9.0 ~ 10.0)
+     *
+     * @param resId 图片资源
+     * @return drawable
+     */
+    public String getRootString(@StringRes int resId) {
+        return activity.getString(resId);
+    }
+    
+
+    /**
      * 获取颜色资源 (为了适配android 9.0 ~ 10.0)
      *
      * @param resId 颜色资源

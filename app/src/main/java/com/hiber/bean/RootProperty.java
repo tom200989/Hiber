@@ -63,6 +63,19 @@ public class RootProperty implements Serializable {
      */
     private String packageName;
 
+    /**
+     * 是否开启lint检查
+     */
+    private boolean setLint;
+
+    public boolean isSetLint() {
+        return setLint;
+    }
+
+    public void setSetLint(boolean setLint) {
+        this.setLint = setLint;
+    }
+
     public String getPackageName() {
         return packageName;
     }
@@ -73,6 +86,7 @@ public class RootProperty implements Serializable {
 
     /**
      * 当前是否全屏
+     *
      * @return 当前是否全屏
      */
     public boolean isFullScreen() {
@@ -90,6 +104,7 @@ public class RootProperty implements Serializable {
 
     /**
      * 获取状态栏颜色
+     *
      * @return 获取状态栏颜色
      */
     public int getColorStatusBar() {
@@ -107,6 +122,7 @@ public class RootProperty implements Serializable {
 
     /**
      * 获取工程默认目录名
+     *
      * @return 获取工程默认目录名
      */
     public String getProjectDirName() {
@@ -124,6 +140,7 @@ public class RootProperty implements Serializable {
 
     /**
      * 获取权限请求码
+     *
      * @return 获取权限请求码
      */
     public int getPermissionCode() {
@@ -141,6 +158,7 @@ public class RootProperty implements Serializable {
 
     /**
      * 获取权限数组
+     *
      * @return 获取权限数组
      */
     public String[] getPermissions() {
@@ -158,6 +176,7 @@ public class RootProperty implements Serializable {
 
     /**
      * 获取fragment字节数组
+     *
      * @return 获取fragment字节数组
      */
     public Class[] getFragmentClazzs() {
@@ -175,6 +194,7 @@ public class RootProperty implements Serializable {
 
     /**
      * 当前是否为「非保存Activity状态」
+     *
      * @return 当前是否为「非保存Activity状态」
      */
     public boolean isSaveInstanceState() {
@@ -192,6 +212,7 @@ public class RootProperty implements Serializable {
 
     /**
      * 获取当前日志标记
+     *
      * @return 获取当前日志标记
      */
     public String getTAG() {
@@ -209,6 +230,7 @@ public class RootProperty implements Serializable {
 
     /**
      * 获取当前的布局ID
+     *
      * @return 获取当前的布局ID
      */
     public int getLayoutId() {
@@ -226,6 +248,7 @@ public class RootProperty implements Serializable {
 
     /**
      * 获取当前布局里的framelayoutID
+     *
      * @return 获取当前布局里的framelayoutID
      */
     public int getContainId() {
@@ -254,6 +277,8 @@ public class RootProperty implements Serializable {
         sb.append("\n").append("\t").append("TAG ='").append(TAG).append('\'');
         sb.append("\n").append("\t").append("layoutId =").append(layoutId);
         sb.append("\n").append("\t").append("containId =").append(containId);
+        sb.append("\n").append("\t").append("packageName ='").append(packageName).append('\'');
+        sb.append("\n").append("\t").append("setLint =").append(setLint);
         sb.append("\n}");
         return sb.toString();
     }
