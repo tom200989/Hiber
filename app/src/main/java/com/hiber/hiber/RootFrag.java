@@ -874,7 +874,6 @@ public abstract class RootFrag extends Fragment implements FragmentBackHandler {
     public String getRootString(@StringRes int resId) {
         return activity.getString(resId);
     }
-    
 
     /**
      * 获取颜色资源 (为了适配android 9.0 ~ 10.0)

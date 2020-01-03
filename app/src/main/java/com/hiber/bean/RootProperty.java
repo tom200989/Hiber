@@ -63,19 +63,6 @@ public class RootProperty implements Serializable {
      */
     private String packageName;
 
-    /**
-     * 是否开启lint检查
-     */
-    private boolean setLint;
-
-    public boolean isSetLint() {
-        return setLint;
-    }
-
-    public void setSetLint(boolean setLint) {
-        this.setLint = setLint;
-    }
-
     public String getPackageName() {
         return packageName;
     }
@@ -278,7 +265,6 @@ public class RootProperty implements Serializable {
         sb.append("\n").append("\t").append("layoutId =").append(layoutId);
         sb.append("\n").append("\t").append("containId =").append(containId);
         sb.append("\n").append("\t").append("packageName ='").append(packageName).append('\'');
-        sb.append("\n").append("\t").append("setLint =").append(setLint);
         sb.append("\n}");
         return sb.toString();
     }

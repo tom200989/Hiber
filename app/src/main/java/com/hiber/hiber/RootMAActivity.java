@@ -136,7 +136,7 @@ public abstract class RootMAActivity extends FragmentActivity {
     /**
      * lint检查开关 ( T: 打开lint检查, 默认true)
      */
-    private boolean isLintCheck = true;
+    // private boolean isLintCheck = true;
 
     /**
      * Eventbus 泛型字节码集合
@@ -174,21 +174,23 @@ public abstract class RootMAActivity extends FragmentActivity {
                     }
 
                     // 4.android 运行版本在 [android 9.0 P] 以下才做规范判断
-                    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.P & isLintCheck & rootProperty.isSetLint()) {
+                    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.P) {
                         // 4.1.包名检查
                         if (!packageCheck(packageName)) {
                             toast(R.string.PACKAGE_NAME_NOT_MATCH, 5000);
                             return;
                         }
 
-                        // 4.2.lint检查开发规范
-                        List<Integer> lintCodes = lintCheck(packageName);
-                        if (lintCodes.size() > 0) {
-                            Intent intent = new Intent(this, LintActivity.class);
-                            intent.putIntegerArrayListExtra(LintHelper.class.getSimpleName(), (ArrayList<Integer>) lintCodes);
-                            startActivity(intent);
-                            return;
-                        }
+                        // 4.2.子线程 -- lint检查开发规范
+                        new Thread(() -> {
+                            List<Integer> lintCodes = lintCheck(packageName);
+                            if (lintCodes.size() > 0) {
+                                runOnUiThread(this::killAllActivitys);
+                                Intent intent = new Intent(this, LintActivity.class);
+                                intent.putIntegerArrayListExtra(LintHelper.class.getSimpleName(), (ArrayList<Integer>) lintCodes);
+                                startActivity(intent);
+                            }
+                        }).start();
                     }
 
                     // 5.填充视图

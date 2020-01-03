@@ -54,7 +54,7 @@ dependencies {
     api 'com.android.support:multidex:1.0.1'
     
     // 开发规范检查
-    api(name: 'ma_lint3', ext: 'aar')
+    api(name: 'ma_lint5', ext: 'aar')
 
     // json解析
     api 'com.alibaba:fastjson:1.2.61'
