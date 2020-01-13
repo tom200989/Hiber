@@ -154,7 +154,7 @@ public class PercentLayoutHelper {
                     supportMinOrMaxDimesion(widthHint, heightHint, view, info);
 
                     if (params instanceof ViewGroup.MarginLayoutParams) {
-                        info.fillMarginLayoutParams((ViewGroup.MarginLayoutParams) params, widthHint, heightHint);
+                        info.fillMarginLayoutParams(view,(ViewGroup.MarginLayoutParams) params, widthHint, heightHint);
                     } else {
                         info.fillLayoutParams(params, widthHint, heightHint);
                     }
@@ -724,7 +724,7 @@ public class PercentLayoutHelper {
          * Fills {@code ViewGroup.MarginLayoutParams} dimensions and margins based on percentage
          * values.
          */
-        public void fillMarginLayoutParams(ViewGroup.MarginLayoutParams params, int widthHint, int heightHint) {
+        public void fillMarginLayoutParams(View childView, ViewGroup.MarginLayoutParams params, int widthHint, int heightHint) {
             fillLayoutParams(params, widthHint, heightHint);
 
             // Preserver the original margins, so we can restore them after the measure step.
@@ -754,10 +754,12 @@ public class PercentLayoutHelper {
             if (startMarginPercent != null) {
                 int base = getBaseByModeAndVal(widthHint, heightHint, startMarginPercent.basemode);
                 MarginLayoutParamsCompat.setMarginStart(params, (int) (base * startMarginPercent.percent));
+                childView.setLayoutParams(params);
             }
             if (endMarginPercent != null) {
                 int base = getBaseByModeAndVal(widthHint, heightHint, endMarginPercent.basemode);
                 MarginLayoutParamsCompat.setMarginEnd(params, (int) (base * endMarginPercent.percent));
+                childView.setLayoutParams(params);
             }
             if (Log.isLoggable(TAG, Log.DEBUG)) {
                 Log.d(TAG, "after fillMarginLayoutParams: (" + params.width + ", " + params.height + ")");
