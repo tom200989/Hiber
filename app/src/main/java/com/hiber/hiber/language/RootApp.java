@@ -50,9 +50,10 @@ public class RootApp extends MultiDexApplication {
         synchronized (Object.class) {
             /* 定义LOG文件的格式: sdcard/applications/log/159289121238798 */
             // 1.获取读写权限
-            int exstorePer = ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
+            int wrPer = ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
+            int rePer = ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE);
             // 2.如果读写权限通过
-            if (exstorePer == PackageManager.PERMISSION_GRANTED) {
+            if (wrPer == PackageManager.PERMISSION_GRANTED & rePer == PackageManager.PERMISSION_GRANTED) {
                 // 3.查询文件夹是否存在
                 String appsPath = Environment.getExternalStorageDirectory().getAbsolutePath() + "/applications";
                 File appFile = new File(appsPath);
