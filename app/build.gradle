@@ -2,11 +2,11 @@ apply plugin: 'com.android.library'
 //apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 28
+    compileSdkVersion 29
     defaultConfig {
-        buildToolsVersion "28.0.3"
-        minSdkVersion 19
-        targetSdkVersion 28
+        buildToolsVersion "29.0.3"
+        minSdkVersion 21
+        targetSdkVersion 29
         versionCode 1
         versionName "1.0"
         multiDexEnabled true
@@ -38,9 +38,12 @@ dependencies {
 
     // eventbus
     api 'org.greenrobot:eventbus:3.1.1'
-    // sdk = 28
+    // sdk = 28 (上升至android Q sdk 29以后, google不再支持support包, 而使用androidX, 以后请留意)
+    //noinspection GradleCompatible
     api 'com.android.support:design:28.0.0'
+    //noinspection GradleCompatible
     api 'com.android.support:support-v4:28.0.0'
+    //noinspection GradleCompatible
     api 'com.android.support:appcompat-v7:28.0.0'
 
     // butterknife
@@ -52,7 +55,7 @@ dependencies {
     // multiDex分包处理
     //noinspection GradleDependency
     api 'com.android.support:multidex:1.0.1'
-    
+
     // 开发规范检查
     api(name: 'ma_lint5', ext: 'aar')
 

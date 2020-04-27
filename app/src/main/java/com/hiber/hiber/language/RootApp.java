@@ -5,6 +5,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
+import android.os.Build;
 import android.os.Environment;
 import android.os.StrictMode;
 import android.support.multidex.MultiDexApplication;
@@ -16,6 +17,7 @@ import com.hiber.hiber.CrashHelper;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /* 必须使用MultiDexApplication配合依赖multidex:1.0.1使用 */
 public class RootApp extends MultiDexApplication {
@@ -54,8 +56,13 @@ public class RootApp extends MultiDexApplication {
             int rePer = ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE);
             // 2.如果读写权限通过
             if (wrPer == PackageManager.PERMISSION_GRANTED & rePer == PackageManager.PERMISSION_GRANTED) {
-                // 3.查询文件夹是否存在
-                String appsPath = Environment.getExternalStorageDirectory().getAbsolutePath() + "/applications";
+                // 3.查询文件夹是否存在 -- 兼容android Q sdk = 29
+                String appsPath;
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                    appsPath = Objects.requireNonNull(getExternalFilesDir(null)).getAbsolutePath() + "/applications";
+                } else {
+                    appsPath = Environment.getExternalStorageDirectory().getAbsolutePath() + "/applications";
+                }
                 File appFile = new File(appsPath);
                 // 4.如果［applications］文件夹不存在 -- 创建
                 if (!appFile.exists() || !appFile.isDirectory()) {
