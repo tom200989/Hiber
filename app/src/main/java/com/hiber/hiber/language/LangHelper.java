@@ -92,9 +92,16 @@ public class LangHelper {
         } else {
             configuration.locale = locale;
         }
-        DisplayMetrics dm = resources.getDisplayMetrics();
-        resources.updateConfiguration(configuration, dm);
-        Locale.setDefault(locale);// 该句必须要重新刷新
+
+        // 3.此处 >= android N (Android 7.0) 需要适配
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            context.createConfigurationContext(configuration);
+        } else {
+            DisplayMetrics dm = resources.getDisplayMetrics();
+            resources.updateConfiguration(configuration, dm);
+        }
+        // 4.该句必须要重新刷新
+        Locale.setDefault(locale);
     }
 
     /**
