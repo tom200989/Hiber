@@ -12,6 +12,8 @@ import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Looper;
+import android.os.MessageQueue;
 import android.support.annotation.StringRes;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
@@ -262,6 +264,8 @@ public abstract class RootMAActivity extends FragmentActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        // 视图结构树加载并显示到屏幕后 - 回调 - 一般用于获取控件大小
+        Looper.myQueue().addIdleHandler(new IdleHandlerImpl());
         if (!EventBus.getDefault().isRegistered(this)) {
             EventBus.getDefault().register(this);
         }
@@ -1224,5 +1228,27 @@ public abstract class RootMAActivity extends FragmentActivity {
      * @return true:自定义逻辑 false:super.onBackPress()
      */
     public abstract boolean onBackClick();
+
+    /**
+     * 视图全部绘制完毕 (即视图已经加载到结构树上, 可用于获取控件大小)
+     */
+    public abstract void inflateViewFinish();
+
+    /* -------------------------------------------- impl -------------------------------------------- */
+
+    /**
+     * IdleHandler 实现类
+     */
+    class IdleHandlerImpl implements MessageQueue.IdleHandler {
+
+        @Override
+        public boolean queueIdle() {
+            // 回调
+            inflateViewFinish();
+            // return true，此Idle一直在Handler中, 循环执行
+            // return false, 执行1次后就从Handler线程中remove掉
+            return false;
+        }
+    }
 
 }
