@@ -158,7 +158,7 @@ public abstract class RootMAActivity extends FragmentActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
+        beforeAllFirst();
         // 0.检测action与category是否符合规范
         boolean isActionCategoryMatch = checkActionCategory();
         if (isActionCategoryMatch) {// 0.1.符合条件则正常执行
@@ -1209,6 +1209,10 @@ public abstract class RootMAActivity extends FragmentActivity {
     }
 
     /* -------------------------------------------- abstract -------------------------------------------- */
+
+    public void beforeAllFirst( ) {
+        
+    }
 
     /**
      * 初始配置
