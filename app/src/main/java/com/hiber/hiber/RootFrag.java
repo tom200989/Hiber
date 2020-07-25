@@ -826,6 +826,30 @@ public abstract class RootFrag extends Fragment implements FragmentBackHandler {
     }
 
     /**
+     * 隐藏软键盘
+     */
+    public void hideKeyBoard() {
+        RootMAActivity activity = (RootMAActivity) getActivity();
+        if (activity != null) {
+            activity.hideKeyBoard();
+        } else {
+            Lgg.t(Cons.TAG).ee("RootHiber--> hideKeyBoard() error: RootMAActivity is null");
+        }
+    }
+
+    /**
+     * 显示软键盘
+     */
+    public void showKeyBoard() {
+        RootMAActivity activity = (RootMAActivity) getActivity();
+        if (activity != null) {
+            activity.showKeyBoard();
+        } else {
+            Lgg.t(Cons.TAG).ee("RootHiber--> showKeyBoard() error: RootMAActivity is null");
+        }
+    }
+
+    /**
      * 吐司提示
      *
      * @param tip      提示

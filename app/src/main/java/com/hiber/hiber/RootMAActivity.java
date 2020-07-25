@@ -22,6 +22,7 @@ import android.util.TypedValue;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
@@ -1206,6 +1207,26 @@ public abstract class RootMAActivity extends FragmentActivity {
      */
     public void killAllActivitys() {
         ActivityHelper.killAllActivity();
+    }
+
+    /**
+     * 隐藏软键盘
+     */
+    public void hideKeyBoard() {
+        InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+        if (imm != null) {
+            imm.hideSoftInputFromWindow(getWindow().getDecorView().getWindowToken(), 0);
+        }
+    }
+
+    /**
+     * 显示软键盘
+     */
+    public void showKeyBoard() {
+        InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+        if (imm != null) {
+            imm.showSoftInputFromInputMethod(getWindow().getDecorView().getWindowToken(), 0);
+        }
     }
 
     /* -------------------------------------------- abstract -------------------------------------------- */
