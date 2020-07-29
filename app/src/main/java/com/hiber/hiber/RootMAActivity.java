@@ -1231,8 +1231,8 @@ public abstract class RootMAActivity extends FragmentActivity {
 
     /* -------------------------------------------- abstract -------------------------------------------- */
 
-    public void beforeAllFirst( ) {
-        
+    public void beforeAllFirst() {
+
     }
 
     /**
@@ -1257,7 +1257,9 @@ public abstract class RootMAActivity extends FragmentActivity {
     /**
      * 视图全部绘制完毕 (即视图已经加载到结构树上, 可用于获取控件大小)
      */
-    public abstract void inflateViewFinish();
+    public void inflateViewFinish() {
+
+    }
 
     /* -------------------------------------------- impl -------------------------------------------- */
 
