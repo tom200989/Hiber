@@ -9,8 +9,8 @@ import java.io.Serializable;
  */
 public class PermissBean implements Serializable {
     
-    private View permissView;// 自定义视图
-    private StringBean stringBean;// 默认情况下的字符内容对象
+    private View permissView;// 自定义视图(普通)
+    private StringBean stringBean;// 默认情况下的字符内容对象(普通)
 
     public PermissBean() {
     }

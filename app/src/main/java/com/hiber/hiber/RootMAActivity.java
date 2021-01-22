@@ -124,7 +124,7 @@ public abstract class RootMAActivity extends FragmentActivity {
     /**
      * 包名, 用于Lint检测
      */
-    private String packageName = "";
+    protected String packageName = "";
 
     /**
      * 存储「frag绝对路径, frag字节码」

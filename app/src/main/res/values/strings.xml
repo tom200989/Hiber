@@ -5,6 +5,7 @@
     <string name="wd_cancel">Cancel</string>
     <string name="wd_ok">OK</string>
     <string name="ok_i_got_it">OK, I got it</string>
+    <string name="super_permiss_not_open">Super permiss not open</string>
     <string name="ACTION_ERR">
         跳转目标Activity: [$1%s]失败,原因:
         \n1.目标activity在manifest里没有配置Intent-filter:action路径.

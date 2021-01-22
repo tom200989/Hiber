@@ -24,7 +24,7 @@ public class Cons {
      * 权限流程标记
      */
     public static String TAG2 = "PermissW";// 权限流程标记
-    
+
     /**
      * Activity统一管理流程
      */
@@ -34,4 +34,8 @@ public class Cons {
      * 默认的工程目录名
      */
     public static String RootDir = "hiber";// 项目根目录名
+
+    public static final int REQ_SUPER_INIT = 11010;// 超管权限请求码(初始化)
+    public static final int REQ_SUPER_CLICK = 11020;// 超管权限请求码(点击时)
+    public static final int REQ_SUPER_NONE = 11030;// 超管权限请求码(默认)
 }
