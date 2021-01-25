@@ -376,25 +376,25 @@ public abstract class RootFrag extends Fragment implements FragmentBackHandler {
             superInnerBean.setSupermission(superBean.getSupermission());
             superInnerBean.setListener(new SuperPermissListener() {
                 @Override
-                public void initSuperPermissPass() {
+                public void initSuperPermissPass() {// (初始化申请)用户打开了超管权限
                     RootFrag.this.isOnResume = true;
                     initOtherPermiss();// 继续申请其他权限
                 }
 
                 @Override
-                public void clickSuperPermissPass() {
+                public void clickSuperPermissPass() {// (点击申请)用户打开了超管权限
                     RootFrag.this.isOnResume = true;
                     clickOtherPermiss(tmp_click_permissions);// 继续申请点击其他权限
                 }
 
                 @Override
-                public void superPermissStillClose() {
+                public void superPermissStillClose() {// 用户没有打开超管权限 - 弹窗
                     RootFrag.this.isOnResume = false;
-                    showPermissFrag(PERTYPE.SUPER, null);// 弹窗
+                    showPermissFrag(PERTYPE.SUPER, null);
                 }
 
                 @Override
-                public void superPermissCancel() {
+                public void superPermissCancel() {// 用户点击了弹框的[取消]按钮
                     // TODO: 2021/01/022  弹窗 - 回调业务
                     RootFrag.this.isOnResume = false;
                     superBean.getBussinessListener().clickSuperCancel();
@@ -1040,6 +1040,16 @@ public abstract class RootFrag extends Fragment implements FragmentBackHandler {
      */
     public int getRootColor(@ColorRes int resId) {
         return ContextCompat.getColor(activity, resId);
+    }
+
+    /**
+     * 获取SD卡根路径
+     *
+     * @param dirName 目录名
+     * @return 根路径
+     */
+    public String getSdPath(String dirName) {
+        return ((RootMAActivity) activity).getSdPath(dirName);
     }
 
     @Override

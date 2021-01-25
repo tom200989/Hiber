@@ -7,6 +7,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.ActivityInfo;
+import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.os.Build;
@@ -47,6 +49,7 @@ import org.greenrobot.eventbus.ThreadMode;
 
 import java.io.File;
 import java.io.Serializable;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -1224,7 +1227,7 @@ public abstract class RootMAActivity extends FragmentActivity {
         int SDK_cur = Build.VERSION.SDK_INT;
         int SDK_Q = Build.VERSION_CODES.Q;
         int SDK_R = Build.VERSION_CODES.R;
-        
+
         // 当前版本 < Android Q
         if (SDK_cur < SDK_Q) {
             Lgg.i(TAG, "当前路径为[SDK_cur < SDK_Q], 路径为[传统模式]");
@@ -1232,20 +1235,53 @@ public abstract class RootMAActivity extends FragmentActivity {
         }
 
         // 当前版本 == Android Q
-        if (SDK_cur < SDK_R) {
-            Lgg.i(TAG, "当前路径为[SDK_cur < SDK_R], 路径为[沙盒模式]");
-            return Objects.requireNonNull(getExternalFilesDir(null)).getAbsolutePath() + dirName;
+        if (SDK_cur == SDK_Q) {
+            // requestLegacyExternalStorage 兼容
+            if (isRequestLegacyExternalStorage(this)) {// requestLegacyExternalStorage = true - 传统路径
+                Lgg.i(TAG, "当前路径为[SDK_cur == SDK_Q], 路径为[传统模式]");
+                return Environment.getExternalStorageDirectory().getAbsolutePath() + dirName;
+            } else {// requestLegacyExternalStorage = false - 沙盒路径
+                Lgg.i(TAG, "当前路径为[SDK_cur == SDK_Q], 路径为[沙盒模式]");
+                return Objects.requireNonNull(getExternalFilesDir(null)).getAbsolutePath() + dirName;
+            }
+
         }
 
         // 当前版本 > Android Q (大于等于 Android R)
-        if (Environment.isExternalStorageManager()) {// 是否有超管权限 - 传统模式
-            Lgg.i(TAG, "当前路径为[SDK_cur >= SDK_R], 且开通超管权限, 路径为[传统模式]");
-            return Environment.getExternalStorageDirectory().getAbsolutePath() + dirName;
-        } else {// 沙盒模式
-            Lgg.i(TAG, "当前路径为[SDK_cur >= SDK_R], 且未开通超管权限, 路径为[沙盒模式]");
+        if (SDK_cur >= SDK_R) {
+            if (Environment.isExternalStorageManager()) {// 是否有超管权限 - 传统模式
+                Lgg.i(TAG, "当前路径为[SDK_cur >= SDK_R], 且开通超管权限, 路径为[传统模式]");
+                return Environment.getExternalStorageDirectory().getAbsolutePath() + dirName;
+            } else {// 沙盒模式
+                Lgg.i(TAG, "当前路径为[SDK_cur >= SDK_R], 且未开通超管权限, 路径为[沙盒模式]");
+                return Objects.requireNonNull(getExternalFilesDir(null)).getAbsolutePath() + dirName;
+            }
+        } else {
             return Objects.requireNonNull(getExternalFilesDir(null)).getAbsolutePath() + dirName;
         }
 
+    }
+
+    /**
+     * 判断AndroidMainfest.xml中 [RequestLegacyExternalStorage] 的值 (仅在Android Q这个版本使用)
+     *
+     * @param context 域
+     * @return T: 设置了true
+     */
+    public boolean isRequestLegacyExternalStorage(Context context) {
+        try {
+            PackageInfo packageInfo = context.getPackageManager().getPackageInfo(context.getPackageName(), 0);
+            ApplicationInfo appInfo = packageInfo.applicationInfo;
+            Field field = appInfo.getClass().getDeclaredField("privateFlags");
+            field.setAccessible(true);
+            int value = (int) field.get(appInfo);
+            Lgg.i(TAG, "读取Legacy标签成功");
+            return (value & (1 << 29)) != 0;
+        } catch (Exception e) {
+            Lgg.e(TAG, "读取Legacy标签出错");
+            e.printStackTrace();
+        }
+        return false;
     }
 
     /**
