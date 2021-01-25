@@ -11,6 +11,7 @@ import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.MessageQueue;
@@ -44,6 +45,7 @@ import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
+import java.io.File;
 import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -1210,6 +1212,43 @@ public abstract class RootMAActivity extends FragmentActivity {
     }
 
     /**
+     * 获取SD卡根路径
+     *
+     * @param dirName 目录名
+     * @return 根路径
+     */
+    public String getSdPath(String dirName) {
+        // 规避斜杆错误
+        dirName = dirName.startsWith(File.separator) ? dirName : File.separator + dirName;
+        // 定义版本层
+        int SDK_cur = Build.VERSION.SDK_INT;
+        int SDK_Q = Build.VERSION_CODES.Q;
+        int SDK_R = Build.VERSION_CODES.R;
+        
+        // 当前版本 < Android Q
+        if (SDK_cur < SDK_Q) {
+            Lgg.i(TAG, "当前路径为[SDK_cur < SDK_Q], 路径为[传统模式]");
+            return Environment.getExternalStorageDirectory().getAbsolutePath() + dirName;
+        }
+
+        // 当前版本 == Android Q
+        if (SDK_cur < SDK_R) {
+            Lgg.i(TAG, "当前路径为[SDK_cur < SDK_R], 路径为[沙盒模式]");
+            return Objects.requireNonNull(getExternalFilesDir(null)).getAbsolutePath() + dirName;
+        }
+
+        // 当前版本 > Android Q (大于等于 Android R)
+        if (Environment.isExternalStorageManager()) {// 是否有超管权限 - 传统模式
+            Lgg.i(TAG, "当前路径为[SDK_cur >= SDK_R], 且开通超管权限, 路径为[传统模式]");
+            return Environment.getExternalStorageDirectory().getAbsolutePath() + dirName;
+        } else {// 沙盒模式
+            Lgg.i(TAG, "当前路径为[SDK_cur >= SDK_R], 且未开通超管权限, 路径为[沙盒模式]");
+            return Objects.requireNonNull(getExternalFilesDir(null)).getAbsolutePath() + dirName;
+        }
+
+    }
+
+    /**
      * 隐藏软键盘
      */
     public void hideKeyBoard() {
@@ -1231,6 +1270,9 @@ public abstract class RootMAActivity extends FragmentActivity {
 
     /* -------------------------------------------- abstract -------------------------------------------- */
 
+    /**
+     * onCreated方法里, 任何操作之前
+     */
     public void beforeAllFirst() {
 
     }
