@@ -11,6 +11,8 @@ import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
+import android.graphics.drawable.Drawable;
+import android.graphics.drawable.GradientDrawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
@@ -20,16 +22,19 @@ import android.os.MessageQueue;
 import android.support.annotation.StringRes;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
+import android.support.v4.content.ContextCompat;
 import android.text.TextUtils;
 import android.util.TypedValue;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.alibaba.fastjson.JSONObject;
+import com.hiber.bean.GradientBean;
 import com.hiber.bean.RootProperty;
 import com.hiber.bean.SkipBean;
 import com.hiber.cons.Cons;
@@ -56,6 +61,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
+import java.util.Random;
 
 import butterknife.ButterKnife;
 
@@ -90,6 +96,11 @@ public abstract class RootMAActivity extends FragmentActivity {
      * 状态栏颜色ID 如:R.color.xxx
      */
     private int colorStatusBar = R.color.colorHiberAccent;
+
+    /**
+     * 状态栏渐变色对象
+     */
+    private GradientBean gradientBean;
 
     /**
      * 布局ID 如:R.layout.xxx
@@ -161,6 +172,7 @@ public abstract class RootMAActivity extends FragmentActivity {
      */
     protected Handler handler = new Handler();
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -202,12 +214,14 @@ public abstract class RootMAActivity extends FragmentActivity {
                     }
 
                     // 5.填充视图
-                    // setContentView(layoutId);
-                    setContentView(getHiberView(layoutId));
+                    setContentView(getHiberView(layoutId, gradientBean));
                     // 6.绑定butterknife
                     ButterKnife.bind(this);
                     // 7.设置状态栏颜色
-                    StatusBarCompat.setStatusBarColor(this, getResources().getColor(colorStatusBar), false);
+                    if (gradientBean == null) {
+                        // 单一色
+                        StatusBarCompat.setStatusBarColor(this, getResources().getColor(colorStatusBar), false);
+                    }
                     // 8.处理从其他组件传递过来的数据
                     handleIntentExtra(getIntent());
                     // 9.视图填充完毕
@@ -235,18 +249,92 @@ public abstract class RootMAActivity extends FragmentActivity {
     }
 
     /**
+     * 创建 statubarView
+     *
+     * @param drawable 自定义背景
+     * @return statubarView
+     */
+    private View createStatubarView(Drawable drawable) {
+        // 获取状态栏高度
+        int resourceId = getResources().getIdentifier("status_bar_height", "dimen", "android");
+        int statubarHeight = getResources().getDimensionPixelSize(resourceId);
+        // 创建一个imageview
+        ImageView statubarView = new ImageView(this);
+        ViewGroup.LayoutParams vp = new ViewGroup.LayoutParams(-1, statubarHeight);
+        statubarView.setLayoutParams(vp);
+        // 设置背景
+        statubarView.setBackground(drawable);
+        // 设置ID
+        statubarView.setId(new Random().nextInt());
+        return statubarView;
+    }
+
+    /**
+     * 获取自定义状态栏
+     *
+     * @param gradientBean 渐变对象
+     * @return 自定义状态栏
+     */
+    private View getStausbarView(GradientBean gradientBean) {
+        // 准备一个空状态栏容器
+        View statubarView = null;
+        // 如果设置状态栏 - 就隐藏原来状态栏 并 生成自定义状态栏
+        if (gradientBean != null) {
+            getWindow().setStatusBarColor(Color.TRANSPARENT);
+            getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_STABLE | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN);
+        }
+        if (gradientBean != null) {
+            // 自定义drawable
+            Drawable drawable = gradientBean.getDrawable();
+            if (drawable != null) {
+                statubarView = createStatubarView(drawable);
+            } else {// 渐变
+                GradientDrawable.Orientation orientation = gradientBean.getOrientation();
+                int[] colors = gradientBean.getColors();
+                if (orientation == null || colors == null || colors.length <= 0) {// 渐变模式未赋值
+                    toast(R.string.GRADIENT_COLOR_NOT_SET, 5000);
+                } else {
+                    // 生成渐变对象
+                    GradientDrawable gradientDrawable = new GradientDrawable();
+                    int[] colorInts = new int[colors.length];
+                    for (int i = 0; i < colors.length; i++) {
+                        colorInts[i] = ContextCompat.getColor(this, colors[i]);
+                    }
+                    gradientDrawable.setColors(colorInts);
+                    gradientDrawable.setOrientation(orientation);
+                    gradientDrawable.setGradientType(GradientDrawable.LINEAR_GRADIENT);
+                    // 填充
+                    statubarView = createStatubarView(gradientDrawable);
+                }
+            }
+        }
+        return statubarView;
+    }
+
+    /**
      * 生成带吐司的布局
      *
      * @param layoutId 布局ID
      * @return 复合布局
      */
-    private View getHiberView(int layoutId) {
+    private View getHiberView(int layoutId, GradientBean gradientBean) {
+        // 获取到一个自定义状态栏
+        View stausbarView = getStausbarView(gradientBean);
         // 生成顶级布局
         RelativeLayout hiberRelative = new RelativeLayout(this);
-        ViewGroup.LayoutParams vp = new ViewGroup.LayoutParams(-1, -1);
+        RelativeLayout.LayoutParams vp = new RelativeLayout.LayoutParams(-1, -1);
         hiberRelative.setLayoutParams(vp);
+        if (stausbarView != null) {
+            hiberRelative.addView(stausbarView);
+        }
         // 填充外部布局
         View inflate = View.inflate(this, layoutId, null);
+        RelativeLayout.LayoutParams vlp = new RelativeLayout.LayoutParams(-1, -1);
+        // 如果外部设置了状态栏 - 则指定相对位置
+        if (stausbarView != null) {
+            vlp.addRule(RelativeLayout.BELOW, stausbarView.getId());
+        }
+        inflate.setLayoutParams(vlp);
         hiberRelative.addView(inflate);
         // 新建吐司文本
         tvToast = new TextView(this);
@@ -586,6 +674,7 @@ public abstract class RootMAActivity extends FragmentActivity {
         Lgg.t(TAG).vv(rootProperty.toString());
         isFullScreen = rootProperty.isFullScreen();
         colorStatusBar = rootProperty.getColorStatusBar() <= 0 ? colorStatusBar : rootProperty.getColorStatusBar();
+        gradientBean = rootProperty.getGradientStatusBar();
         layoutId = rootProperty.getLayoutId() <= 0 ? layoutId : rootProperty.getLayoutId();
         TAG = TextUtils.isEmpty(rootProperty.getTAG()) ? TAG : rootProperty.getTAG();
         isSaveInstanceState = rootProperty.isSaveInstanceState();

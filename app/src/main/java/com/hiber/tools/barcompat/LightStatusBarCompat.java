@@ -56,10 +56,7 @@ class LightStatusBarCompat {
         } else if (MeizuLightStatusBarImpl.isMe()) {
             IMPL = new MeizuLightStatusBarImpl();
         } else {
-            IMPL = new ILightStatusBar() {
-                @Override
-                public void setLightStatusBar(Window window, boolean lightStatusBar) {
-                }
+            IMPL = (window, lightStatusBar) -> {
             };
         }
     }

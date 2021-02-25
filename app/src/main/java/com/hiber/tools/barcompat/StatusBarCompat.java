@@ -3,15 +3,17 @@ package com.hiber.tools.barcompat;
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.graphics.Color;
+import android.graphics.drawable.GradientDrawable;
 import android.os.Build;
 import android.os.Environment;
 import android.support.annotation.ColorInt;
 import android.support.annotation.IdRes;
+import android.support.v4.content.ContextCompat;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
-
+import android.widget.LinearLayout;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -35,14 +37,8 @@ public class StatusBarCompat {
             IMPL = new StatusBarMImpl();
         } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP && !isEMUI()) {
             IMPL = new StatusBarLollipopImpl();
-        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-            IMPL = new StatusBarKitkatImpl();
         } else {
-            IMPL = new IStatusBar() {
-                @Override
-                public void setStatusBarColor(Window window, @ColorInt int color) {
-                }
-            };
+            IMPL = new StatusBarKitkatImpl();
         }
     }
 
@@ -105,12 +101,55 @@ public class StatusBarCompat {
      * @param lightStatusBar if the status bar color is light. Only effective in some devices.
      */
     public static void setStatusBarColor(Window window, @ColorInt int color, boolean lightStatusBar) {
-        if ((window.getAttributes().flags & WindowManager.LayoutParams.FLAG_FULLSCREEN) > 0
-                || StatusBarExclude.exclude) {
+        if ((window.getAttributes().flags & WindowManager.LayoutParams.FLAG_FULLSCREEN) > 0 || StatusBarExclude.exclude) {
             return;
         }
         IMPL.setStatusBarColor(window, color);
         LightStatusBarCompat.setLightStatusBar(window, lightStatusBar);
+    }
+
+    /**
+     * 设置渐变色状态栏
+     *
+     * @param activity    域
+     * @param orientation 方向
+     * @param colors      颜色值
+     */
+    public static void setStatusBarColorGrient(Activity activity, GradientDrawable.Orientation orientation, @ColorInt int... colors) {
+        // 先隐藏原来的状态栏
+        activity.getWindow().setStatusBarColor(Color.TRANSPARENT);
+        activity.getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_STABLE | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN);
+        // 取得内容区域
+        ViewGroup contentView = activity.findViewById(android.R.id.content);
+        // 获取状态栏高度
+        int statusbar_height = getStatubarHeight(activity);
+        // 创建一个同样高度的view
+        View statusBarView = new View(activity);
+        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, statusbar_height);
+        statusBarView.setLayoutParams(params);
+        // 设置渐变色
+        GradientDrawable drawables = new GradientDrawable();
+        int[] colorInts = new int[colors.length];
+        for (int i = 0; i < colors.length; i++) {
+            colorInts[i] = ContextCompat.getColor(activity, colors[i]);
+        }
+        drawables.setColors(colorInts);
+        drawables.setOrientation(orientation);
+        drawables.setGradientType(GradientDrawable.LINEAR_GRADIENT);
+        statusBarView.setBackground(drawables);
+        // 把view添加进去
+        contentView.addView(statusBarView);
+    }
+
+    /**
+     * 获取状态栏高度
+     *
+     * @param activity 域
+     * @return 高度
+     */
+    private static int getStatubarHeight(Activity activity) {
+        int resourceId = activity.getResources().getIdentifier("status_bar_height", "dimen", "android");
+        return activity.getResources().getDimensionPixelSize(resourceId);
     }
 
     /**
@@ -120,9 +159,7 @@ public class StatusBarCompat {
      * @param fitSystemWindows If true, the android content view would be applied the insets
      */
     public static void setFitsSystemWindows(Window window, boolean fitSystemWindows) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
-            internalSetFitsSystemWindows(window, fitSystemWindows);
-        }
+        internalSetFitsSystemWindows(window, fitSystemWindows);
     }
 
     @TargetApi(Build.VERSION_CODES.ICE_CREAM_SANDWICH)
@@ -179,13 +216,11 @@ public class StatusBarCompat {
      * @param translucent True if set the status bar to be translucent
      */
     public static void setTranslucent(Window window, boolean translucent) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-            if (translucent) {
-                window.addFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
-                internalSetFitsSystemWindows(window, false);
-            } else {
-                window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
-            }
+        if (translucent) {
+            window.addFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
+            internalSetFitsSystemWindows(window, false);
+        } else {
+            window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
         }
     }
 }

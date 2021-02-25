@@ -19,6 +19,11 @@ public class RootProperty implements Serializable {
     private int colorStatusBar;
 
     /**
+     * 状态栏颜色对象
+     */
+    private GradientBean gradientBean;
+
+    /**
      * 工程默认目录名 如:aaa
      */
     private String projectDirName;
@@ -251,11 +256,32 @@ public class RootProperty implements Serializable {
         this.containId = containId;
     }
 
+    /**
+     * 获取当前状态栏颜色对象
+     *
+     * @return 状态栏颜色对象
+     */
+    public GradientBean getGradientStatusBar() {
+        return gradientBean;
+    }
+
+    /**
+     * 设置状态栏颜色对象
+     *
+     * @param gradientBean 状态栏颜色对象
+     * @return 本类
+     */
+    public RootProperty setGradientStatusBar(GradientBean gradientBean) {
+        this.gradientBean = gradientBean;
+        return this;
+    }
+
     @Override
     public String toString() {
         final StringBuffer sb = new StringBuffer("RootProperty{");
         sb.append("\n").append("\t").append("isFullScreen =").append(isFullScreen);
         sb.append("\n").append("\t").append("colorStatusBar =").append(colorStatusBar);
+        sb.append("\n").append("\t").append("gradientBean =").append(gradientBean);
         sb.append("\n").append("\t").append("projectDirName ='").append(projectDirName).append('\'');
         sb.append("\n").append("\t").append("permissionCode =").append(permissionCode);
         sb.append("\n").append("\t").append("permissions =").append(permissions == null ? "null" : Arrays.asList(permissions).toString());

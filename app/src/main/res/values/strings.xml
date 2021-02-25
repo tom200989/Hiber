@@ -29,5 +29,6 @@
     <string name="EVENT_BUS_CLASS_IS_NULL">你的Eventbus指定类型为空</string>
     <string name="EVENT_BUS_LISTENER_IS_NULL">你的Eventbus指定监听器为空</string>
     <string name="EVENT_BUS_DOES_NOT_REGISTER">你的Eventbus尚未注册\n请在Activity:onResume()之后或者Fragment:onNexts()之后使用</string>
+    <string name="GRADIENT_COLOR_NOT_SET">你指定了渐变色对象, 但没有给它的属性赋值</string>
 
 </resources>
