@@ -217,9 +217,8 @@ public abstract class RootMAActivity extends FragmentActivity {
                     setContentView(getHiberView(layoutId, gradientBean));
                     // 6.绑定butterknife
                     ButterKnife.bind(this);
-                    // 7.设置状态栏颜色
+                    // 7.设置状态栏颜色 (单一色)
                     if (gradientBean == null) {
-                        // 单一色
                         StatusBarCompat.setStatusBarColor(this, getResources().getColor(colorStatusBar), false);
                     }
                     // 8.处理从其他组件传递过来的数据
@@ -297,9 +296,7 @@ public abstract class RootMAActivity extends FragmentActivity {
                     // 生成渐变对象
                     GradientDrawable gradientDrawable = new GradientDrawable();
                     int[] colorInts = new int[colors.length];
-                    for (int i = 0; i < colors.length; i++) {
-                        colorInts[i] = ContextCompat.getColor(this, colors[i]);
-                    }
+                    for (int i = 0; i < colors.length; i++) colorInts[i] = ContextCompat.getColor(this, colors[i]);
                     gradientDrawable.setColors(colorInts);
                     gradientDrawable.setOrientation(orientation);
                     gradientDrawable.setGradientType(GradientDrawable.LINEAR_GRADIENT);
@@ -324,16 +321,12 @@ public abstract class RootMAActivity extends FragmentActivity {
         RelativeLayout hiberRelative = new RelativeLayout(this);
         RelativeLayout.LayoutParams vp = new RelativeLayout.LayoutParams(-1, -1);
         hiberRelative.setLayoutParams(vp);
-        if (stausbarView != null) {
-            hiberRelative.addView(stausbarView);
-        }
+        if (stausbarView != null) hiberRelative.addView(stausbarView);
         // 填充外部布局
         View inflate = View.inflate(this, layoutId, null);
         RelativeLayout.LayoutParams vlp = new RelativeLayout.LayoutParams(-1, -1);
         // 如果外部设置了状态栏 - 则指定相对位置
-        if (stausbarView != null) {
-            vlp.addRule(RelativeLayout.BELOW, stausbarView.getId());
-        }
+        if (stausbarView != null) vlp.addRule(RelativeLayout.BELOW, stausbarView.getId());
         inflate.setLayoutParams(vlp);
         hiberRelative.addView(inflate);
         // 新建吐司文本
