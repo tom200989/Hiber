@@ -33,7 +33,7 @@ public class RootProperty implements Serializable {
     /**
      * 状态栏透明度
      */
-    private float statusbarAlpha;
+    private float statusbarAlpha = 1;
 
     /**
      * 工程默认目录名 如:aaa

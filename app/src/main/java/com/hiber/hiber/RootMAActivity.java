@@ -112,7 +112,7 @@ public abstract class RootMAActivity extends FragmentActivity {
      * 状态栏透明度
      */
     @FloatRange(from = 0, to = 1)
-    private float statusbarAlpha;
+    private float statusbarAlpha = 1;
 
     /**
      * 布局ID 如:R.layout.xxx
