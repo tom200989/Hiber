@@ -3,6 +3,8 @@ package com.hiber.bean;
  * Created by qianli.ma on 2018/8/1 0001.
  */
 
+import android.support.annotation.FloatRange;
+
 import java.io.Serializable;
 import java.util.Arrays;
 
@@ -22,6 +24,16 @@ public class RootProperty implements Serializable {
      * 状态栏颜色对象
      */
     private GradientBean gradientBean;
+
+    /**
+     * 是否启动状态栏沉浸模式
+     */
+    private boolean statusbarImmerse;
+
+    /**
+     * 状态栏透明度
+     */
+    private float statusbarAlpha;
 
     /**
      * 工程默认目录名 如:aaa
@@ -276,12 +288,54 @@ public class RootProperty implements Serializable {
         return this;
     }
 
+    /**
+     * 当前状态栏模式是否为沉浸式
+     *
+     * @return T:是
+     */
+    public boolean isStatusbarImmerse() {
+        return statusbarImmerse;
+    }
+
+    /**
+     * 设置状态栏为沉浸式
+     *
+     * @param statusbarImmerse T:沉浸
+     * @return 本类
+     */
+    public RootProperty setStatusbarImmerse(boolean statusbarImmerse) {
+        this.statusbarImmerse = statusbarImmerse;
+        return this;
+    }
+
+    /**
+     * 获取当前状态栏透明度
+     *
+     * @return 透明度
+     */
+    public float getStatusbarAlpha() {
+        return statusbarAlpha;
+    }
+
+    /**
+     * 设置状态栏透明度
+     *
+     * @param statusbarAlpha 透明度
+     * @return 本类
+     */
+    public RootProperty setStatusbarAlpha(@FloatRange(from = 0, to = 1) float statusbarAlpha) {
+        this.statusbarAlpha = statusbarAlpha;
+        return this;
+    }
+
     @Override
     public String toString() {
         final StringBuffer sb = new StringBuffer("RootProperty{");
         sb.append("\n").append("\t").append("isFullScreen =").append(isFullScreen);
         sb.append("\n").append("\t").append("colorStatusBar =").append(colorStatusBar);
         sb.append("\n").append("\t").append("gradientBean =").append(gradientBean);
+        sb.append("\n").append("\t").append("immerse =").append(statusbarImmerse);
+        sb.append("\n").append("\t").append("statusbarAlpha =").append(statusbarAlpha);
         sb.append("\n").append("\t").append("projectDirName ='").append(projectDirName).append('\'');
         sb.append("\n").append("\t").append("permissionCode =").append(permissionCode);
         sb.append("\n").append("\t").append("permissions =").append(permissions == null ? "null" : Arrays.asList(permissions).toString());
