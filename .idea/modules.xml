@@ -2,8 +2,8 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/Hiber.iml" filepath="$PROJECT_DIR$/Hiber.iml" group="Hiber" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/app.iml" filepath="$PROJECT_DIR$/.idea/modules/app/app.iml" group="Hiber/app" />
+      <module fileurl="file://$PROJECT_DIR$/Hiber.iml" filepath="$PROJECT_DIR$/Hiber.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/Hiber.app.iml" filepath="$PROJECT_DIR$/.idea/modules/app/Hiber.app.iml" />
     </modules>
   </component>
 </project>

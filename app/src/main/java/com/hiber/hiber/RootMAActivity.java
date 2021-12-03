@@ -167,7 +167,7 @@ public abstract class RootMAActivity extends FragmentActivity {
     /**
      * lint检查开关 ( T: 打开lint检查, 默认true)
      */
-    // private boolean isLintCheck = true;
+    public boolean isLintCheck = true;
 
     /**
      * Eventbus 泛型字节码集合
@@ -192,7 +192,7 @@ public abstract class RootMAActivity extends FragmentActivity {
         boolean isActionCategoryMatch = checkActionCategory();
         if (isActionCategoryMatch) {// 0.1.符合条件则正常执行
 
-            if (checkStardard()) {// 0.2.singleTask配置符合
+            if (checkStardard()) {// 0.2.standard配置符合
                 Lgg.t(TAG).vv("Method--> " + getClass().getSimpleName() + ":onCreate()");
                 // 1.获取初始化配置对象
                 rootProperty = initProperty();
@@ -215,7 +215,7 @@ public abstract class RootMAActivity extends FragmentActivity {
                         // 4.2.子线程 -- lint检查开发规范
                         new Thread(() -> {
                             List<Integer> lintCodes = lintCheck(packageName);
-                            if (lintCodes.size() > 0) {
+                            if (lintCodes.size() > 0 && isLintCheck) {
                                 runOnUiThread(this::killAllActivitys);
                                 Intent intent = new Intent(this, LintActivity.class);
                                 intent.putIntegerArrayListExtra(LintHelper.class.getSimpleName(), (ArrayList<Integer>) lintCodes);
@@ -241,7 +241,7 @@ public abstract class RootMAActivity extends FragmentActivity {
                     Lgg.t(TAG).ee(proErr);
                 }
 
-            } else {// 没有配置singleTask
+            } else {// 没有配置standard
                 String err = getString(R.string.STANDARD_TIP);
                 toast(err, 5000);
                 Lgg.t(TAG).ee(err);
